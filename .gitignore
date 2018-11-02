@@ -1,0 +1,9 @@
+/dist.ini
+/MANIFEST.SKIP
+/Dancer2-Plugin-MarkdownFilesToHTML-*
+/tmp
+!*/tmp
+*~
+*.swp
+*.swo
+weaver.ini
