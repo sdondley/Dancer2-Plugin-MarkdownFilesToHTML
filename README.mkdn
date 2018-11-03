@@ -4,7 +4,7 @@ Dancer2::Plugin::MarkdownFilesToHTML
 
 # VERSION
 
-version 0.002
+version 0.003
 
 # SYNOPSIS
 
@@ -83,6 +83,48 @@ Conversion keywords can also be called directly from within your Dancer2 app.
 Note that when called directly and a configuration file is also implemented,
 most of the default settings (route, template, and layout settings don't apply)
 still apply but can be overridden.
+
+# KEYWORDS
+
+## mdfile\_2html($file, \[ \\%options \])
+
+Converts a single markdown file into HTML. An optional hashref can be passed with
+options as documented in the ["General Options"](#general-options) section below.
+
+Example:
+
+    my $html = mdile_2html('/path/to/dir/with/makrdown/files');
+
+If the `$file` argument is relative, then it will be appended to the
+`file_root` setting in the configuration file. If `file_root` is not set
+in the configuration file, `lib/data/markdown_files` is used.
+
+## mdfiles\_2html($dir, \[ \\%options \]  )
+
+Attempts to convert all the files present in a directory to markdown and munges
+them into a single HTML string. By default, the files are processed in
+alphabetical order.
+
+Example:
+
+    my ($html, $toc) = mdiles_2html('/path/to/dir/with/makrdown/files',
+                        { generate_toc => 1 });
+
+If the `$dir` argument is relative, then it will be appended to the
+`file_root` setting in the configuration file. If `file_root` is not set
+in the configuration file, `lib/data/markdown_files` is used.
+
+Each file can be thought of as a chapter within a single larger document
+comprised of all the individual files. Ideally, each file will have a single
+level 1 header tag to serve as the title for the chapter.
+
+By default, the method asssumes all files present in a directory are markdown
+documents and are converted in the order as listed alphabetically in the
+directory. Hidden files (those beginning with a '.') are automatically
+excluded. These defaults can be modified. See the ["mdfiles\_2html Options"](#mdfiles_2html-options)
+section for details.
+
+### General Options
 
 # OPTIONS
 
@@ -228,6 +270,7 @@ listed above.
 - [Data::Dumper](https://metacpan.org/pod/Data::Dumper)
 - [Encode](https://metacpan.org/pod/Encode)
 - [File::Basename](https://metacpan.org/pod/File::Basename)
+- [File::Path](https://metacpan.org/pod/File::Path)
 - [File::Slurper](https://metacpan.org/pod/File::Slurper)
 - [File::Spec::Functions](https://metacpan.org/pod/File::Spec::Functions)
 - [HTML::TreeBuilder](https://metacpan.org/pod/HTML::TreeBuilder)
