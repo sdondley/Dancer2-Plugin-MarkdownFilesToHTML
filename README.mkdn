@@ -1,1 +1,151 @@
-Initial commit
+# NAME
+
+Dancer2::Plugin::MarkdownFilesToHTML
+
+# VERSION
+
+version 0.001
+
+# SYNOPSIS
+
+No perl code is necessary. Markdown documents can be displayed as HTML inside a
+Dancer2 app using the Dancer2 \`config.yml\` file:
+
+plugins:
+  MarkdownFilesToHTML:
+    defaults:
+      header\_class: 'elegantshadow scrollspy'  # class added to headers
+      route\_root: 'tutorials'                  # root where routes will get attached
+      file\_root: 'lib/data/markdown\_files'     # where markdowns file are located
+      generate\_toc: 1                          # generate a table of contents
+      linkable\_headers: 1                      # generates unique id for headers
+      template: 'index.tt'                     # template file to use
+      layout: 'main.tt'                        # layout file to use
+      dialect: 'GitHub'                        # dialect of markdown file
+    routes:                                    # list of conversion routes
+      - dzil\_tutorial:
+          dir: 'Dist-Zilla-for-Beginners'      # dir or file property must be set
+      - another\_tutorial:
+          file: 'intro.md'
+          template: 'doc.tt'                   # defaults above can be overridden
+          generate\_toc: 0
+          linkable\_headers: 0
+
+See the `CONFIGURATION` section below for more details on configuration
+settings.
+
+No configuration file is required, however, and conversion using ordinary Perl
+code can be accomplshed from with your Dancer2 app like so:
+
+    use Dancer2::Plugin::MarkdownFileToHTML;
+
+    # convert a single markdown file to HTML
+    my ($html, $toc) = mdfile_2html('/path/to/file.md',
+                                    { generate_toc => 1, header_class => 'header' });
+
+    # convert entire directory of markdown files to HTML
+    my ($html, $toc) = mdfiles_2html('/dir/with/markdown/files', { generate_toc => 1 });
+
+# DESCRIPTION
+
+This module converts markdown files into a single HTML string using the Dancer 2
+web app framework. Using the Dancer2 config file, multiple routes can be
+established in the web app, with each route converting a single markdown
+document or all the markdown documents in a directory into an HTML string.
+Optionally, it can return a second HTML string containing a hierarchical table
+of contents based on the contents of the markdown documents. These strings can
+then be inserted into your Dancer2 website. This module extends the [Markdent](https://metacpan.org/pod/Markdent)
+module to perform the conversion.
+
+The module is particarly well-suited for markdown that follows a classic outline
+structure with markdown headers, like so:
+
+    # Title of Document
+
+    ## Header 2
+
+    ### Header 3
+
+    #### Header 4
+
+    And so on...
+
+Each header is converted to a `<hX\`> html tag where `X` is the level
+corresponding header level in the markdown file. If present, the headers can be
+used to generate the table of contents and associated anchor tags for linking to
+each of the sections within the document. If headers are not present in the
+markdown file, a useful table of contents cannot be generated.
+
+Conversion keywords can also be called directly from within your Dancer2 app.
+Note that when called directly and a configuration file is also implemented,
+most of the default settings (route, template, and layout settings don't apply)
+still apply but can be overridden.
+
+# REQUIRES
+
+- [Carp](https://metacpan.org/pod/Carp)
+- [Dancer2::Plugin](https://metacpan.org/pod/Dancer2::Plugin)
+- [Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser](https://metacpan.org/pod/Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser)
+- [Data::Dumper](https://metacpan.org/pod/Data::Dumper)
+- [Encode](https://metacpan.org/pod/Encode)
+- [File::Basename](https://metacpan.org/pod/File::Basename)
+- [File::Slurper](https://metacpan.org/pod/File::Slurper)
+- [File::Spec::Functions](https://metacpan.org/pod/File::Spec::Functions)
+- [HTML::TreeBuilder](https://metacpan.org/pod/HTML::TreeBuilder)
+- [Storable](https://metacpan.org/pod/Storable)
+- [strict](https://metacpan.org/pod/strict)
+- [warnings](https://metacpan.org/pod/warnings)
+
+# SUPPORT
+
+## Perldoc
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Dancer2::Plugin::MarkdownFilesToHTML
+
+## Websites
+
+The following websites have more information about this module, and may be of help to you. As always,
+in addition to those websites please use your favorite search engine to discover more resources.
+
+- MetaCPAN
+
+    A modern, open-source CPAN search engine, useful to view POD in HTML format.
+
+    [https://metacpan.org/release/Dancer2-Plugin-MarkdownFilesToHTML](https://metacpan.org/release/Dancer2-Plugin-MarkdownFilesToHTML)
+
+## Source Code
+
+The code is open to the world, and available for you to hack on. Please feel free to browse it and play
+with it, or whatever. If you want to contribute patches, please send me a diff or prod me to pull
+from your repository :)
+
+[https://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML](https://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML)
+
+    git clone git://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML.git
+
+# BUGS AND LIMITATIONS
+
+You can make new bug reports, and view existing ones, through the
+web interface at [http://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues](http://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues).
+
+# INSTALLATION
+
+See perlmodinstall for information and options on installing Perl modules.
+
+# SEE ALSO
+
+[Markdent](https://metacpan.org/pod/Markdent)
+[Dancer2](https://metacpan.org/pod/Dancer2)
+
+# AUTHOR
+
+Steve Dondley <s@dondley.com>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018 by Steve Dondley.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
