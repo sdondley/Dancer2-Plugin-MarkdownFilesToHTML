@@ -2,7 +2,6 @@ package Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser ;
 
 use strict;
 use warnings;
-use Data::Dumper 'Dumper';
 use Markdent::Parser;
 use Moose;
 extends 'Markdent::Handler::HTMLStream::Fragment';
@@ -54,11 +53,11 @@ sub handle_event {
       return;
     }
 
-    $self->unravel_stash;
+    $self->_unravel_stash;
     $self->$meth( $event->kv_pairs_for_attributes() );
 }
 
-sub unravel_stash {
+sub _unravel_stash {
   my $s = shift;
   my @events = @{$s->event_stash};
   foreach my $event (@events) {
@@ -103,6 +102,37 @@ sub start_header {
   $s->_stream_start_tag( 'h' . $level, \%attributes );
 }
 
-
-
 1;
+
+__END__
+
+=head1 NAME
+
+MarkdownParser - Markdown Parser, helper class for MarkdownFilesToHTML
+
+=head1 DESCRIPTION
+
+Supplies an object for parsing markdown files for the L<Dancer2::Plugin::MarkdownFilesToHTML>
+plugin. It extends the C<Markdent::Handler::HTMLStream::Fragment> class and overrides
+approrpiate methods to inject custom HTML into the output as needed. Specifically:
+
+=over 2
+
+=item * adds the class C<single-line> to a line of code appearing on a single
+line by itself
+
+=item * optionally adds classes and a unique id to header tag HTML elements
+
+=back
+
+=head1 CONFIGURATION
+
+None.
+
+=head1 DEPENDENCIES
+
+L<Markdent>
+
+=head1 SEE ALSO
+
+L<Markdent>

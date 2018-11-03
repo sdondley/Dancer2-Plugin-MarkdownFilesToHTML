@@ -1,4 +1,10 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - Add dist.ini and weaver.ini back to distro
+  - modify .gitignore so .ini files aren't ignored
+  - Add markdent as prereq to dist.ini file
+  - Add documentation for MarkdownParser module
 
 0.003     2018-11-03 17:50:50-04:00 America/New_York
   - Improve documentation
