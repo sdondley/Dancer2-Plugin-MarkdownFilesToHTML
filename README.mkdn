@@ -4,7 +4,7 @@ Dancer2::Plugin::MarkdownFilesToHTML
 
 # VERSION
 
-version 0.003
+version 0.004
 
 # SYNOPSIS
 
@@ -310,7 +310,7 @@ from your repository :)
 # BUGS AND LIMITATIONS
 
 You can make new bug reports, and view existing ones, through the
-web interface at [http://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues](http://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues).
+web interface at [https://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues](https://github.com/sdondley/Dancer2-Plugin-MarkdownFilesToHTML/issues).
 
 # INSTALLATION
 
