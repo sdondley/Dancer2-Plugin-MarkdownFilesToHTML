@@ -1,4 +1,7 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - Documentation additions
 
 0.001     2018-11-03 16:24:32-04:00 America/New_York
   - Initial release
