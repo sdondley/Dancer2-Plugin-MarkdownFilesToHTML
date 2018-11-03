@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.002     2018-11-03 17:09:55-04:00 America/New_York
   - Documentation additions
 
 0.001     2018-11-03 16:24:32-04:00 America/New_York
