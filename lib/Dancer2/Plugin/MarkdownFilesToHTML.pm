@@ -10,6 +10,7 @@ use File::Slurper qw ( read_text );
 use HTML::TreeBuilder;
 use Data::Dumper 'Dumper';
 use File::Basename;
+use File::Path qw(make_path);
 use Storable;
 use Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser;
 
@@ -21,32 +22,48 @@ sub BUILD {
   my $s = shift;
   my $app = $s->app;
   my $config = $s->config;
-  print Dumper $config;
+
+  # generate the cache if it doesn't exist
+  if (!-d 'lib/data/markdown_files/cache') {
+    make_path 'lib/data/markdown_files'
+  }
 
   # add routes from config file
   my $routes = $config->{routes};
   return if !$routes;
   foreach my $route (@$routes) {
+
+    # validate arguments supplied from config file
     if ((ref $route) ne 'HASH') {
       die 'Config file misconfigured. Check syntax or consult documentation.';
     }
 
     my ($path) = keys %$route;
+
     if (defined $route->{$path}{dir} && defined $route->{$path}{file}) {
       die 'Ambiguous route. Both a file and directory given. Supply only one.';
     }
     my $method = defined $route->{$path}{dir} ? 'mdfiles_2html' : 'mdfile_2html';
     my $resource = $route->{$path}{dir} // $route->{$path}{file};
 
-    if (!$resource) {
-      die 'Config file does not supply a file or directory with this route.';
-    }
-
     my $options = _get_options($route, $path, $config);
 
     my $is_abs = File::Spec->file_name_is_absolute($resource);
     if (!$is_abs) {
       $resource = File::Spec->catfile($options->{file_root}, $resource);
+    }
+
+    if (!-e $resource) {
+      die 'The file or directory you associated with route ' . $path
+           . ' does not exist';
+    }
+
+    if (-f $resource && $route->{$path}{dir}) {
+      die 'Your route expects a directory but you gave a file: ' . $resource;
+    }
+
+    if (-d $resource && $route->{$path}{file}) {
+      die 'Your route expects a file but you gave a directory: ' . $resource;
     }
 
     $s->_add_route($path, $resource, $method, $options);
@@ -172,6 +189,7 @@ sub mdfile_2html {
 
   # check the cache for a hit by comparing timestemps of cached file and
   # markdown file
+
   my $cache_file = $file =~ s/\///gr;
   $cache_file = "lib/data/markdown_files/cache/$cache_file";
   if (-f $cache_file && $options->{cache}) {
@@ -340,23 +358,32 @@ still apply but can be overridden.
 
 =keyword mdfile_2html($file, [ \%options ])
 
+Converts a single markdown file into HTML. An optional hashref can be passed with
+options as documented in the L<General Options> section below.
+
 Example:
 
   my $html = mdile_2html('/path/to/dir/with/makrdown/files');
 
-Converts a single markdown file into HTML. An optional hashref can be passed with
-options as documented in the L<General Options> section below.
+If the C<$file> argument is relative, then it will be appended to the
+C<file_root> setting in the configuration file. If C<file_root> is not set
+in the configuration file, C<lib/data/markdown_files> is used.
+
 
 =keyword mdfiles_2html($dir, [ \%options ]  )
+
+Attempts to convert all the files present in a directory to markdown and munges
+them into a single HTML string. By default, the files are processed in
+alphabetical order.
 
 Example:
 
   my ($html, $toc) = mdiles_2html('/path/to/dir/with/makrdown/files',
                       { generate_toc => 1 });
 
-Attempts to convert all the files present in a directory to markdown and munges
-them into a single HTML string. By default, the files are processed in
-alphabetical order.
+If the C<$dir> argument is relative, then it will be appended to the
+C<file_root> setting in the configuration file. If C<file_root> is not set
+in the configuration file, C<lib/data/markdown_files> is used.
 
 Each file can be thought of as a chapter within a single larger document
 comprised of all the individual files. Ideally, each file will have a single

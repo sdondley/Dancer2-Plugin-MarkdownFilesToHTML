@@ -1,4 +1,9 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - Improve documentation
+  - Ensure files/directories supplied in config file are valid
+  - Ensure cache directory exists for storing cached data
 
 0.002     2018-11-03 17:09:55-04:00 America/New_York
   - Documentation additions
