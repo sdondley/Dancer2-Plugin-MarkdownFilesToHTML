@@ -1,4 +1,8 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - remove crufty directory
+  - fix typo in documentation
 
 0.004     2018-11-03 19:57:45-04:00 America/New_York
   - Add dist.ini and weaver.ini back to distro

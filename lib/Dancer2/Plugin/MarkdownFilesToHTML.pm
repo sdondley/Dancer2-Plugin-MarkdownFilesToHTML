@@ -311,7 +311,7 @@ settings.
 No configuration file is required, however, and conversion using ordinary Perl
 code can be accomplshed from with your Dancer2 app like so:
 
-  use Dancer2::Plugin::MarkdownFileToHTML;
+  use Dancer2::Plugin::MarkdownFilesToHTML;
 
   # convert a single markdown file to HTML
   my ($html, $toc) = mdfile_2html('/path/to/file.md',
