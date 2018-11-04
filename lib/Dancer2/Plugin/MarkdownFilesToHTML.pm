@@ -522,7 +522,7 @@ create like this:
         routes:
           - another_page:
             dir: 'my_dir_containing_md_file'
-            include_files
+            include_files:
               - 'file4.md'
               - 'file2.md'
               - 'file1.md'
