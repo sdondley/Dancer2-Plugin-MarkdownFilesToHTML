@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.005     2018-11-03 20:25:14-04:00 America/New_York
   - remove crufty directory
   - fix typo in documentation
 
