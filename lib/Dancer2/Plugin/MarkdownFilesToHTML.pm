@@ -10,7 +10,8 @@ use File::Basename;
 use Dancer2::Plugin;
 use HTML::TreeBuilder;
 use File::Spec::Functions qw(catfile);
-use Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser;
+use Text::Markdown::Hoedown;
+use Dancer2::Plugin::DebugDump;
 
 plugin_keywords qw( mdfile_2html mdfiles_2html );
 
@@ -181,17 +182,6 @@ sub mdfile_2html {
 
   # no cache hit so we must parse the file
 
-  # direct output to a string instead of a file
-  my $out = q{};
-  open my $fh, '>:encoding(UTF-8)', \$out;
-
-  my $h = Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser->new(
-    output           => $fh,
-    dialect          => $options->{dialect},
-    header_class     => $options->{header_class},
-    linkable_headers => $options->{linkable_headers},
-  );
-
   # fetch the file and parse it
   my $markdown = '';
   {
@@ -200,29 +190,30 @@ sub mdfile_2html {
     $markdown = <$md>;
     close $md;
   }
-  $h->parse(\$markdown);
-  close $fh;
+  # markdown function supplied by Hoedown module
+  my $out = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
 
   # TOC makes linkable_headers true so we just need to test linkable_headers option
   if (!$options->{linkable_headers}) {
     return $s->_cache_data($options, $cache_file, $file, $out);
   }
 
-  my $tree     = HTML::TreeBuilder->new_from_content(decode ('UTF-8', $out));
-  my @elements = $tree->look_down(id => qr/^header/);
-  my ($base)   = fileparse($file, qr/\.[^.]*/);
+  my $tree     = HTML::TreeBuilder->new_from_content($out);
+  my @elements = $tree->look_down(_tag => qr/^h\d$/);
   my $toc      = HTML::TreeBuilder->new();
+  my ($base)   = fileparse($file, qr/\.[^.]*/);
+  my $hdr_ct   = 0;
   foreach my $element (@elements) {
-    my $id = $element->attr('id');
-    $element->attr('id', $id . "_$base");
+    my $id = 'header_' . ${hdr_ct};
+    $hdr_ct++;
+    $element->attr('id', $id . '_' . $base);
+    $element->attr('class' => $options->{header_class}) if $options->{header_class};
     if ($options->{generate_toc}) {
-      my $toc_link = HTML::Element->new('a', href=> "#${id}_$base");
-      $id =~ s/^(header_\d+)_.*/$1/;
-      $toc_link->attr('class', $id);
-      my $br = HTML::Element->new('br');
+      my ($level) = $element->tag =~ /(\d)/;
+      my $toc_link = HTML::Element->new('a', href=> "#${id}_${base}", class => 'header_' . $level);
       $toc_link->push_content($element->as_text);
       $toc->push_content($toc_link);
-      $toc->push_content($br);
+      $toc->push_content(HTML::Element->new('br'));
     }
   }
 
@@ -235,10 +226,6 @@ sub mdfile_2html {
 sub _cache_data {
   my ($s, $options, $cache_file, $file, $content, $toc) = @_;
   $toc //= '';
-
-  # regex hack needed because markdent does not handle strikethroughs
-  $content =~ s/~~(.*?)~~/<strike>$1<\/strike>/gs;
-  $toc     =~ s/~~(.*?)~~/<strike>$1<\/strike>/gs;
 
   if ($options->{cache}) {
     store { html => $content, toc => $toc,
@@ -317,11 +304,11 @@ document or all the markdown documents in a directory into an HTML string.
 Optionally, it can return a second HTML string containing a hierarchical table
 of contents based on the contents of the markdown documents. These strings can
 then be inserted into your Dancer2 website using a config file or manually using
-keywords. This module extends the L<Markdent> module to perform the markdown
-conversions which, unfortunately, requires Moose. However, a simple caching
-mechanism using L<Storable> is employed for each converted markdown file so
-expensive conversion operations are avoided until the markdown file is updated
-on the local file system.
+keywords. This module relies on the L<Text::Markdown::Hoedown> module to execute
+the markdown conversions which uses a fast C module. To further enhance
+performance, a caching mechanism using L<Storable> is employed for each
+converted markdown file so markdown to HTML conversions are avoided except for
+new and updated markdown files.
 
 The module is particarly well-suited for markdown that follows a classic outline
 structure with markdown headers, like so:
