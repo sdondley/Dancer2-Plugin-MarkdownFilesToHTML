@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.006     2018-11-04 22:18:14-05:00 America/New_York
   - fix sample yaml file in documentation
   - moved function for creating cache directory
   - added prereq for Dancer2
