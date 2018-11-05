@@ -1,10 +1,19 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - tidied up the main module code
+  - improve documentation for options
+  - other documentation improvements, corrections and additions
+  - improved name of app in documentation
+  - add .build to .gitignore
 
 0.006     2018-11-04 22:18:14-05:00 America/New_York
   - fix sample yaml file in documentation
   - moved function for creating cache directory
   - added prereq for Dancer2
   - added minimum Perl version
+  - cache content that does not have accompanying TOC
+  - add striken text for content witout TOC
 
 0.005     2018-11-03 20:25:14-04:00 America/New_York
   - remove crufty directory
