@@ -1,5 +1,5 @@
 package Dancer2::Plugin::MarkdownFilesToHTML ;
-
+use 5.13.2;
 use strict;
 use warnings;
 use Dancer2::Plugin;
@@ -17,16 +17,11 @@ use Dancer2::Plugin::MarkdownFilesToHTML::MarkdownParser;
 plugin_keywords qw( mdfile_2html mdfiles_2html );
 
 # builds the routes from config file
-#
 sub BUILD {
   my $s = shift;
   my $app = $s->app;
   my $config = $s->config;
 
-  # generate the cache if it doesn't exist
-  if (!-d 'lib/data/markdown_files/cache') {
-    make_path 'lib/data/markdown_files'
-  }
 
   # add routes from config file
   my $routes = $config->{routes};
@@ -172,9 +167,11 @@ sub mdfiles_2html {
   return ($html, $toc);
 }
 
+
 # The workhorse function of this module which sends the markdown file to get
 # parsed or retrieves html version from cache. Also generates the table of
 # contents
+
 # TODO: make the TOC generation optional based on config setting
 sub mdfile_2html {
 	my $s        = shift;
@@ -189,6 +186,11 @@ sub mdfile_2html {
 
   # check the cache for a hit by comparing timestemps of cached file and
   # markdown file
+
+  # generate the cache if it doesn't exist
+  if (!-d 'lib/data/markdown_files/cache') {
+    make_path 'lib/data/markdown_files'
+  }
 
   my $cache_file = $file =~ s/\///gr;
   $cache_file = "lib/data/markdown_files/cache/$cache_file";
@@ -270,6 +272,7 @@ sub mdfile_2html {
 }
 
 1;
+
 
 __END__
 

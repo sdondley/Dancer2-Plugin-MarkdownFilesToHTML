@@ -2,6 +2,9 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
   - fix sample yaml file in documentation
+  - moved function for creating cache directory
+  - added prereq for Dancer2
+  - added minimum Perl version
 
 0.005     2018-11-03 20:25:14-04:00 America/New_York
   - remove crufty directory
