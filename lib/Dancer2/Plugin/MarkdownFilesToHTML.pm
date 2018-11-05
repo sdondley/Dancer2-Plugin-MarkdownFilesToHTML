@@ -1,5 +1,5 @@
 package Dancer2::Plugin::MarkdownFilesToHTML ;
-use 5.13.2; use strict; use warnings;
+use 5.010; use strict; use warnings;
 
 use Carp;
 use Encode                qw( decode );
@@ -167,7 +167,8 @@ sub mdfile_2html {
 
   # check the cache for a hit by comparing timestemps of cached file and
   # markdown file
-  my $cache_file = $file =~ s/\///gr;
+  my $cache_file = $file;
+  $cache_file =~ s/\///g;
   $cache_file = "lib/data/markdown_files/cache/$cache_file";
   if (-f $cache_file && $options->{cache}) {
     if (-M $cache_file eq -M $file) {
@@ -468,7 +469,6 @@ An array of strings representing the extensions that should be used to determine
 which files contain the markdown documents. This option is valid only with the
 C<mdfiles_2html>) keyword. Only files with the listed extension will be
 converted.
-
 
 =head1 CONFIGURATION
 
