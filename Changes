@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.008     2018-11-05 16:54:02-05:00 America/New_York
   - removed newer regex syntax so module can work with perl > 5.10 now
   - No Moose needed! Switched parser from Markdent to Hoedown
   - updated documentation
