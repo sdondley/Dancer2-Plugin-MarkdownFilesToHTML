@@ -90,11 +90,9 @@ sub _set_options {
   my %options = ();
   foreach my $option (keys %defaults) {
     if ($path) {
-      $options{$option} = $route->{$path}{$option}
-                        // $config->{defaults}{$option}
-                        // $defaults{$option};
+      $options{$option} = $route->{$path}{$option} // $config->{defaults}{$option} // $defaults{$option};
     } else {
-      $options{$option} = $config->{$option} // $defaults{$option};
+      $options{$option} = $route->{$option} // $config->{defaults}{$option} // $defaults{$option};
     }
   }
 
@@ -103,6 +101,19 @@ sub _set_options {
   $options{set} = 1;
 
   return \%options;
+}
+
+sub _get_options {
+  my $s = shift;
+  my $options = shift;
+  my $resource = shift;
+
+  $options = _set_options($options, '', $s->config);
+  my $is_abs = File::Spec->file_name_is_absolute($resource);
+  if (!$is_abs) {
+    $resource = File::Spec->catfile($options->{file_root}, $resource);
+  }
+  return ($options, $resource);
 }
 
 # Gathers lists of files in a directory and sends them off to mdfile_2html for
@@ -114,7 +125,7 @@ sub mdfiles_2html {
 
   # If options haven't been set yet, get defaults from cnofig file
   if (!$options->{set}) {
-    $options = _set_options($options, '', $s->config);
+    ($options, $dir) = $s->_get_options($options, $dir);
   }
 
   my $html = '';
@@ -156,9 +167,9 @@ sub mdfiles_2html {
 sub mdfile_2html {
 	my ($s, $file, $options) = @_;
 
-  # If options haven't been set yet, get defaults from config file
+  # If options haven't been set yet, get defaults from cnofig file
   if (!$options->{set}) {
-    $options = _set_options($options, '', $s->config);
+    ($options, $file) = $s->_get_options($options, $file);
   }
 
   # generate the cache if it doesn't exist
@@ -196,7 +207,12 @@ sub mdfile_2html {
   # See if we can cache and return the output without further processing
   # generate_toc makes linkable_headers true so we just need to test linkable_headers option
   if (!$options->{linkable_headers}) {
-    return $s->_cache_data($options, $cache_file, $file, $out);
+    my ($html, $toc) = $s->_cache_data($options, $cache_file, $file, $out);
+    if (wantarray) {
+      return $html, $toc;
+    } else {
+      return $html;
+    }
   }
 
   my $tree     = HTML::TreeBuilder->new_from_content($out);
