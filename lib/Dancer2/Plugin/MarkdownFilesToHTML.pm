@@ -168,21 +168,22 @@ sub mdfile_2html {
   # check the cache for a hit by comparing timestemps of cached file and
   # markdown file
   my $cache_file = $file;
+
+  # generate unique cache file name appended with values of two options
   $cache_file =~ s/\///g;
-  $cache_file = "lib/data/markdown_files/cache/$cache_file";
+  $cache_file = "lib/data/markdown_files/cache/$cache_file"
+                . $options->{linkable_headers}
+                . $options->{generate_toc};
   if (-f $cache_file && $options->{cache}) {
     if (-M $cache_file eq -M $file) {
       my $data = retrieve $cache_file;
-      if ($data->{linkable_headers} == $options->{linkable_headers}
-          && $data->{generate_toc}  == $options->{generate_toc}) {
         return ($data->{html}, $data->{toc});
       }
     }
   }
 
-  # no cache hit so we must parse the file
-
-  # fetch the file and parse it
+  # no cache hit so we parse the file
+  # slurp the file and parse it with Hoedown's markdown function
   my $markdown = '';
   {
     local $/;
@@ -190,7 +191,6 @@ sub mdfile_2html {
     $markdown = <$md>;
     close $md;
   }
-  # markdown function supplied by Hoedown module
   my $out = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
 
   # TOC makes linkable_headers true so we just need to test linkable_headers option
@@ -218,7 +218,7 @@ sub mdfile_2html {
   }
 
   # add in a spcial class for code that has no siblings to give it special styling
-  # TODO: dcoument this
+  # TODO: document this
   my @code_els = $tree->find_by_tag_name('code');
   foreach my $code_el (@code_els) {
     if (!$code_el->left && !$code_el->right) {
@@ -237,10 +237,7 @@ sub _cache_data {
   $toc //= '';
 
   if ($options->{cache}) {
-    store { html => $content, toc => $toc,
-            linkable_headers => $options->{linkable_headers},
-            generate_toc => $options->{generate_toc} },
-            $cache_file;
+    store { html => $content, toc => $toc, $cache_file }, $cache_file;
     my ($read, $write) = (stat($file))[8,9];
     utime($read, $write, $cache_file);
   }
