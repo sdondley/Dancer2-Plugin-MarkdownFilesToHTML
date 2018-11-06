@@ -370,8 +370,8 @@ configuration file, C<lib/data/markdown_files> is used.
 
 =keyword mdfiles_2html($dir, [ \%options ]  )
 
-Attempts to convert all the files present in a directory to markdown and munges
-them into a single HTML string.
+Attempts to convert all the files present in a directory from markdown into a
+single HTML string.
 
 Example:
 
