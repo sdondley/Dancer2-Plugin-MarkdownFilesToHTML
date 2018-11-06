@@ -4,7 +4,7 @@ logger: 'console'
 plugins:
   MarkdownFilesToHTML:
     defaults:
-      file_root: 'xt/data/markdown_files'
+      file_root: 't/data/markdown_files'
     routes:
       - dzil_tutorial:
           dir: '/Users/stevedondley/perl/github_projects/dzil_tutorial'

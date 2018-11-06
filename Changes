@@ -1,4 +1,10 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - fixed critical bug with direct calls to mdfile_ and mdfiles_2html
+  - moved xt tests to standard test directory
+  - added tests
+  - remove debug code from author test
 
 0.009     2018-11-06 00:11:55-05:00 America/New_York
   - reintroduce "single-line" class for <code> that is a single line of code

@@ -147,6 +147,7 @@ sub mdfiles_2html {
       @files = @matching_files;
     }
   }
+
   if ($options->{exclude_files}) {
     foreach my $excluded_file (@{$options->{exclude_files}}) {
       @files = grep { $_ ne $excluded_file } @files;
@@ -172,18 +173,18 @@ sub mdfile_2html {
     ($options, $file) = $s->_get_options($options, $file);
   }
 
-  # generate the cache if it doesn't exist
-  if (!-d 'lib/data/markdown_files/cache' && $ENV{DANCER_ENVIRONMENT} ne 'testing') {
-    make_path 'lib/data/markdown_files'
+  # generate the cache directory if it doesn't exist
+  my $cache_dir = File::Spec->catfile(dirname($options->{'file_root'}), 'md_file_cache');
+  if (!-d $cache_dir) {
+    make_path $cache_dir or die "Cannot make cache directory $!";
   }
 
   # generate unique cache file name appended with values of two options
   my $cache_file = $file;
   $cache_file =~ s/\///g;
-  my $cache_dir = $ENV{DANCER_ENVIRONMENT} eq 'testing' ? 'xt' : 'lib';
-  $cache_file = "$cache_dir/data/markdown_files/cache/$cache_file"
-                . $options->{linkable_headers}
-                . $options->{generate_toc};
+  $cache_file = File::Spec->catfile(
+                 $cache_dir,
+                 $cache_file . $options->{linkable_headers} . $options->{generate_toc});
 
   # check for cache hit
   if (-f $cache_file && $options->{cache}) {
