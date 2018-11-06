@@ -11,7 +11,6 @@ use Dancer2::Plugin;
 use HTML::TreeBuilder;
 use File::Spec::Functions qw(catfile);
 use Text::Markdown::Hoedown;
-use Dancer2::Plugin::DebugDump;
 
 plugin_keywords qw( mdfile_2html mdfiles_2html );
 
@@ -215,6 +214,15 @@ sub mdfile_2html {
       $toc_link->push_content($element->as_text);
       $toc->push_content($toc_link);
       $toc->push_content(HTML::Element->new('br'));
+    }
+  }
+
+  # add in a spcial class for code that has no siblings to give it special styling
+  # TODO: dcoument this
+  my @code_els = $tree->find_by_tag_name('code');
+  foreach my $code_el (@code_els) {
+    if (!$code_el->left && !$code_el->right) {
+      $code_el->attr('class' => 'single-line');
     }
   }
 
