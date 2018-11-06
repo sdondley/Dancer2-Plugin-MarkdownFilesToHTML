@@ -1,9 +1,10 @@
-template: simple
+template: 'simple'
+layout: 'main'
+logger: 'console'
 plugins:
   MarkdownFilesToHTML:
     defaults:
-      generate_toc: 0
       file_root: 'xt/data/markdown_files'
     routes:
       - dzil_tutorial:
-          dir: 'dzil_tutorial'
+          dir: '/Users/stevedondley/perl/github_projects/dzil_tutorial'

@@ -1,7 +1,9 @@
 use strict;
 use warnings;
 use File::Path;
-use Test::Most tests => 2;
+use Data::Dumper qw(Dumper);
+use Test::Most tests => 4;
+use Test::NoWarnings;
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
@@ -13,20 +15,29 @@ use HTTP::Request::Common;
 { package TestApp;
   use Dancer2;
   use Dancer2::Plugin::MarkdownFilesToHTML;
+  use Data::Dumper qw(Dumper);
 
-  get '/' => sub { return template 'index' };
+  get '/' =>   sub { return template 'index' };
+  get '/intro' => sub {
+    my ($html) = mdfile_2html('intro.md');
+    template 'index.tt', {
+      html => $html,
+    },
+  }
+
 }
 
 my $test = Plack::Test->create( TestApp->to_app );
 my $res = $test->request( GET '/' );
-ok( $res->is_success, 'Successful request' );
+ok( $res->is_success, 'Non-plugin get request can be made' );
 
 $res = $test->request( GET 'dzil_tutorial' );
-ok( $res->is_success, 'Successful request' );
+ok( $res->is_success, 'Can load page using basic config file' );
+
+$res = $test->request( GET 'intro' );
+ok( $res->is_success, 'mdfile_2html call works');
 
 clean_cache_dir();
-
-
 
 sub clean_cache_dir {
   rmtree 'xt/data/markdown_files/cache';
