@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.009     2018-11-06 00:11:55-05:00 America/New_York
   - reintroduce "single-line" class for <code> that is a single line of code
   - minor code improvements
   - make cache hits more reliable and accurate
