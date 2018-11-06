@@ -79,12 +79,12 @@ sub _set_options {
   my ($route, $path, $config) = @_;
 
   my %defaults = (
-    route_root          => '',        template         => 'index.tt',
-    layout              => 'main.tt', header_class     => '',
-    generate_toc        => 0,         linkable_headers => 0,
-    cache               => 1,         dialect          => 'GitHub',
-    exclude_files       => '',        include_files    => '',
-    markdown_extensions => '',        file_root        => 'lib/data/markdown_files',
+    route_root          => '',        template            => 'index.tt',
+    layout              => 'main.tt', header_class        => '',
+    generate_toc        => 0,         linkable_headers    => 0,
+    cache               => 1,         exclude_files       => '',
+    include_files       => '',        markdown_extensions => '',
+    file_root           => 'lib/data/markdown_files',
   );
 
   my %options = ();
@@ -289,7 +289,6 @@ the Dancer2 C<config.yml> file:
         linkable_headers: 1                      # create unique id for headers
         template: 'index.tt'                     # template file to use
         layout: 'main.tt'                        # layout file to use
-        dialect: 'GitHub'                        # dialect of markdown file
       routes:                                    # list of conversion routes
         - dzil_tutorial:
             dir: 'Dist-Zilla-for-Beginners'      # dir containing markdown files
@@ -437,11 +436,6 @@ C<index.tt> is the default template.
 The layout file to use relative to the app's layout directory C<main.tt> is the
 default layout.
 
-=gen_option dialect => $dialect
-
-As markdown has no standard, there are many different dialects. By default, the
-C<GitHub> dialect, as implemented by the Markdent module, is used.
-
 =gen_option cache => $bool
 
 Stores generated html in files. If the timestamp of the cached file indicates
@@ -538,11 +532,18 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
+=head1 SUPPORTED MARKDOWN DIALECTS
+
+The module aims to support the dialect of markdown as implemented by GitHub with
+strikethroughs (C<~~strike~~>) and "fenced" code (C<```fenced code```>). This module
+may make the dialect more configurable in the future.
+
 =head1 DEPENDENCIES
 
 L<Dancer2>
 
-L<Markdent>
+L<Text::Markup::Hoedown>
+
 
 =head2 Development status
 
@@ -551,6 +552,6 @@ maintained. Suggestion for improvement are welcome.
 
 =head1 SEE ALSO
 
-L<Markdent>
-
 L<Dancer2>
+
+L<Text::Markup::Hoedown>
