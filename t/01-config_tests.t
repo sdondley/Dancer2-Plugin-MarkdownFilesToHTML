@@ -3,7 +3,7 @@ use warnings;
 use File::Path;
 use Data::Dumper qw(Dumper);
 use Test::More;
-use Test::Most tests => 10, 'die';
+use Test::Most tests => 11, 'die';
 use Test::NoWarnings;
 
 BEGIN {
@@ -45,6 +45,8 @@ use HTTP::Request::Common;
 
 ### TESTS ###
 
+set_failure_handler( sub { clean_cache_dir(); } );
+
 my $test = Plack::Test->create( TestApp->to_app );
 my $res;
 
@@ -77,16 +79,17 @@ my $skip = 0;
   }
 }
 
-{ # 6, 7
+{ # 6, 7, 8
   SKIP: {
     skip 'test isolation', 2, if $skip;
     $res = $test->request( GET 'all_tut_files' );
     ok( $res->is_success, 'mdfiles_2html call works');
     like ($res->content, qr/<li>Beginning developers/, 'gets content');
+    like ($res->content, qr/class="single-line"/, 'can add single line class');
   }
 }
 
-{ # 8, 9
+{ # 9, 10
   SKIP: {
     skip 'test_isolation', 2, if $skip;
     $res = $test->request( GET 'get_toc' );

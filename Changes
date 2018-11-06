@@ -1,4 +1,10 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - minor documentation fixes, tweaks and updates
+  - removed support for changing dialects
+  - fix bug where single line code was not getting insert for content w/o toc
+  - add test for addition of "single-line" class to code
 
 0.010     2018-11-06 13:48:03-05:00 America/New_York
   - fixed critical bug with direct calls to mdfile_ and mdfiles_2html
