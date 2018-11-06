@@ -1,4 +1,11 @@
-Revision history for Dancer2-Plugin-MarkdownFilesToHTML
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+  - reintroduce "single-line" class for <code> that is a single line of code
+  - minor code improvements
+  - make cache hits more reliable and accurate
+  - fix critical bug in caching mechanism
+  - introduce first real test
 
 0.008     2018-11-05 16:54:02-05:00 America/New_York
   - removed newer regex syntax so module can work with perl > 5.10 now

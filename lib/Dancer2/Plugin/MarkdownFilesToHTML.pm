@@ -11,7 +11,6 @@ use Dancer2::Plugin;
 use HTML::TreeBuilder;
 use File::Spec::Functions qw(catfile);
 use Text::Markdown::Hoedown;
-use Data::Dumper qw(Dumper);
 
 plugin_keywords qw( mdfile_2html mdfiles_2html );
 
@@ -20,7 +19,7 @@ sub BUILD {
   my $s      = shift;
   my $app    = $s->app;
   my $config = $s->config;
-  print Dumper $config;
+  #print Dumper $config;
 
   # add routes from config file
   foreach my $route (@{$config->{routes}}) {
