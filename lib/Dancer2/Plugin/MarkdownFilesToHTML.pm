@@ -311,7 +311,7 @@ this is plugin, like so:
   # convert a single markdown file to HTML
   $html = mdfile_2html('/path/to/file.md', { header_class => 'header_style' });
 
-  # convert directory of markdown files to HTML and generate taable of contents
+  # convert directory of markdown files to HTML and generate table of contents
   ($html, $toc) = mdfiles_2html('/dir/with/markdown/files', { generate_toc => 1 });
 
 
