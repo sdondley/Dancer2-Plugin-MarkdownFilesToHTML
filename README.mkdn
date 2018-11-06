@@ -4,7 +4,7 @@ Dancer2::Plugin::MarkdownFilesToHTML
 
 # VERSION
 
-version 0.010
+version 0.011
 
 # SYNOPSIS
 
@@ -26,7 +26,6 @@ the Dancer2 `config.yml` file:
           linkable_headers: 1                      # create unique id for headers
           template: 'index.tt'                     # template file to use
           layout: 'main.tt'                        # layout file to use
-          dialect: 'GitHub'                        # dialect of markdown file
         routes:                                    # list of conversion routes
           - dzil_tutorial:
               dir: 'Dist-Zilla-for-Beginners'      # dir containing markdown files
@@ -48,7 +47,7 @@ this is plugin, like so:
     # convert a single markdown file to HTML
     $html = mdfile_2html('/path/to/file.md', { header_class => 'header_style' });
 
-    # convert directory of markdown files to HTML and generate taable of contents
+    # convert directory of markdown files to HTML and generate table of contents
     ($html, $toc) = mdfiles_2html('/dir/with/markdown/files', { generate_toc => 1 });
 
 # DESCRIPTION
@@ -108,8 +107,8 @@ configuration file, `lib/data/markdown_files` is used.
 
 ## mdfiles\_2html($dir, \[ \\%options \]  )
 
-Attempts to convert all the files present in a directory to markdown and munges
-them into a single HTML string.
+Attempts to convert all the files present in a directory from markdown into a
+single HTML string.
 
 Example:
 
@@ -176,11 +175,6 @@ The template file to use relative to directory where the app's views are store.
 
 The layout file to use relative to the app's layout directory `main.tt` is the
 default layout.
-
-### dialect => $dialect
-
-As markdown has no standard, there are many different dialects. By default, the
-`GitHub` dialect, as implemented by the Markdent module, is used.
 
 ### cache => $bool
 
@@ -280,6 +274,14 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
+# MARKDOWN CONVERSION NOTES
+
+The module aims to support the dialect of markdown as implemented by GitHub with
+strikethroughs (`~~strike~~`) and "fenced" code (```` ```fenced code``` ````). This module
+may make the dialect options configurable in the future.
+
+The module will add a "single-line" class to single lines of code to facility additional styling.
+
 # REQUIRES
 
 - [Carp](https://metacpan.org/pod/Carp)
@@ -335,9 +337,9 @@ See perlmodinstall for information and options on installing Perl modules.
 
 # SEE ALSO
 
-[Markdent](https://metacpan.org/pod/Markdent)
-
 [Dancer2](https://metacpan.org/pod/Dancer2)
+
+[Text::Markup::Hoedown](https://metacpan.org/pod/Text::Markup::Hoedown)
 
 # AUTHOR
 

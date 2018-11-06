@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.011     2018-11-06 15:22:38-05:00 America/New_York
   - minor documentation fixes, tweaks and updates
   - removed support for changing dialects
   - fix bug where single line code was not getting insert for content w/o toc
