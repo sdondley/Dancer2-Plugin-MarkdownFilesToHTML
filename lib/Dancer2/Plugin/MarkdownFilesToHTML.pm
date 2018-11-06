@@ -165,20 +165,18 @@ sub mdfile_2html {
     make_path 'lib/data/markdown_files'
   }
 
-  # check the cache for a hit by comparing timestemps of cached file and
-  # markdown file
-  my $cache_file = $file;
-
   # generate unique cache file name appended with values of two options
+  my $cache_file = $file;
   $cache_file =~ s/\///g;
   $cache_file = "lib/data/markdown_files/cache/$cache_file"
                 . $options->{linkable_headers}
                 . $options->{generate_toc};
+
+  # check for cache hit
   if (-f $cache_file && $options->{cache}) {
     if (-M $cache_file eq -M $file) {
       my $data = retrieve $cache_file;
-        return ($data->{html}, $data->{toc});
-      }
+      return ($data->{html}, $data->{toc});
     }
   }
 
@@ -193,7 +191,8 @@ sub mdfile_2html {
   }
   my $out = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
 
-  # TOC makes linkable_headers true so we just need to test linkable_headers option
+  # See if we can cache and return the output without further processing
+  # generate_toc makes linkable_headers true so we just need to test linkable_headers option
   if (!$options->{linkable_headers}) {
     return $s->_cache_data($options, $cache_file, $file, $out);
   }
@@ -217,7 +216,7 @@ sub mdfile_2html {
     }
   }
 
-  # add in a spcial class for code that has no siblings to give it special styling
+  # add a special class for code that has no siblings to give it special styling
   # TODO: document this
   my @code_els = $tree->find_by_tag_name('code');
   foreach my $code_el (@code_els) {
