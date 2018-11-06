@@ -11,6 +11,7 @@ use Dancer2::Plugin;
 use HTML::TreeBuilder;
 use File::Spec::Functions qw(catfile);
 use Text::Markdown::Hoedown;
+use Data::Dumper qw(Dumper);
 
 plugin_keywords qw( mdfile_2html mdfiles_2html );
 
@@ -19,6 +20,7 @@ sub BUILD {
   my $s      = shift;
   my $app    = $s->app;
   my $config = $s->config;
+  print Dumper $config;
 
   # add routes from config file
   foreach my $route (@{$config->{routes}}) {
@@ -161,14 +163,15 @@ sub mdfile_2html {
   }
 
   # generate the cache if it doesn't exist
-  if (!-d 'lib/data/markdown_files/cache') {
+  if (!-d 'lib/data/markdown_files/cache' && $ENV{DANCER_ENVIRONMENT} ne 'testing') {
     make_path 'lib/data/markdown_files'
   }
 
   # generate unique cache file name appended with values of two options
   my $cache_file = $file;
   $cache_file =~ s/\///g;
-  $cache_file = "lib/data/markdown_files/cache/$cache_file"
+  my $cache_dir = $ENV{DANCER_ENVIRONMENT} eq 'testing' ? 'xt' : 'lib';
+  $cache_file = "$cache_dir/data/markdown_files/cache/$cache_file"
                 . $options->{linkable_headers}
                 . $options->{generate_toc};
 
@@ -236,7 +239,7 @@ sub _cache_data {
   $toc //= '';
 
   if ($options->{cache}) {
-    store { html => $content, toc => $toc, $cache_file }, $cache_file;
+    store { html => $content, toc => $toc }, $cache_file;
     my ($read, $write) = (stat($file))[8,9];
     utime($read, $write, $cache_file);
   }
