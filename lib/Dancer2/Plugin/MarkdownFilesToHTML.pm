@@ -159,7 +159,7 @@ sub mdfiles_2html {
     $html                      .= $file_html;
     $toc                       .= $file_toc;
   }
-  return ($html, $toc);
+  return wantarray ?  ($html, $toc) : $html;
 }
 
 # Sends the markdown file to get parsed or retrieves html version from cache,
@@ -208,11 +208,7 @@ sub mdfile_2html {
   # generate_toc makes linkable_headers true so we just need to test linkable_headers option
   if (!$options->{linkable_headers}) {
     my ($html, $toc) = $s->_cache_data($options, $cache_file, $file, $out);
-    if (wantarray) {
-      return $html, $toc;
-    } else {
-      return $html;
-    }
+    return wantarray ?  ($html, $toc) : $html;
   }
 
   my $tree     = HTML::TreeBuilder->new_from_content($out);
