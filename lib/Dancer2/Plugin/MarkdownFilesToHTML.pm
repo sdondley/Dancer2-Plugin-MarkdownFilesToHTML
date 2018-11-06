@@ -203,16 +203,17 @@ sub mdfile_2html {
     $markdown = <$md>;
     close $md;
   }
-  my $out = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
+  my $out  = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
+  my $tree = HTML::TreeBuilder->new_from_content($out);
+  _add_single_line_class($tree);
 
   # See if we can cache and return the output without further processing
   # generate_toc makes linkable_headers true so we just need to test linkable_headers option
   if (!$options->{linkable_headers}) {
-    my ($html, $toc) = $s->_cache_data($options, $cache_file, $file, $out);
+    my ($html, $toc) = $s->_cache_data($options, $cache_file, $file, $tree->guts->as_HTML);
     return wantarray ?  ($html, $toc) : $html;
   }
 
-  my $tree     = HTML::TreeBuilder->new_from_content($out);
   my @elements = $tree->look_down(_tag => qr/^h\d$/);
   my $toc      = HTML::TreeBuilder->new();
   my ($base)   = fileparse($file, qr/\.[^.]*/);
@@ -231,21 +232,24 @@ sub mdfile_2html {
     }
   }
 
-  # add a special class for code that has no siblings to give it special styling
-  # TODO: document this
-  my @code_els = $tree->find_by_tag_name('code');
-  foreach my $code_el (@code_els) {
-    if (!$code_el->left && !$code_el->right) {
-      $code_el->attr('class' => 'single-line');
-    }
-  }
-
   # Generate the final HTML from trees and cache
   # "guts" method gets rid of <html> and <body> tags added by TreeBuilder
   return $s->_cache_data($options, $cache_file, $file,
                          $tree->guts->as_HTML, $toc->guts->as_HTML);
 }
 
+# add a special class for code that has no siblings so it can be styled
+sub _add_single_line_class {
+  my $tree = shift;
+  my @code_els = $tree->find_by_tag_name('code');
+  foreach my $code_el (@code_els) {
+    if (!$code_el->left && !$code_el->right) {
+      $code_el->attr('class' => 'single-line');
+    }
+  }
+}
+
+# cache the data
 sub _cache_data {
   my ($s, $options, $cache_file, $file, $content, $toc) = @_;
   $toc //= '';
@@ -532,11 +536,13 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
-=head1 SUPPORTED MARKDOWN DIALECTS
+=head1 MARKDOWN CONVERSION NOTES
 
 The module aims to support the dialect of markdown as implemented by GitHub with
 strikethroughs (C<~~strike~~>) and "fenced" code (C<```fenced code```>). This module
-may make the dialect more configurable in the future.
+may make the dialect options configurable in the future.
+
+The module will add a "single-line" class to single lines of code to facility additional styling.
 
 =head1 DEPENDENCIES
 
