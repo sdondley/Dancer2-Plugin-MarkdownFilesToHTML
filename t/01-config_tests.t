@@ -50,7 +50,6 @@ use HTTP::Request::Common;
 
 ### TESTS ###
 # warnings are thrown with
-&Test::NoWarnings::clear_warnings;
 
 set_failure_handler( sub { clean_cache_dir(); } );
 
