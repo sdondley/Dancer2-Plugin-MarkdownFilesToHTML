@@ -1,7 +1,8 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.012     2018-11-06 20:34:30-05:00 America/New_York
   - more documentation improvements
+  - fix absolute path in test config that was causing smoke tests to fail
 
 0.011     2018-11-06 15:22:38-05:00 America/New_York
   - minor documentation fixes, tweaks and updates
