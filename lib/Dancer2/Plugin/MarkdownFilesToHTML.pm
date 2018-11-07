@@ -383,7 +383,7 @@ Example:
 
 If the C<$dir> argument is relative, then it will be appended to the
 C<file_root> setting in the configuration file. If C<file_root> is not set
-in the configuration file, C<lib/data/markdown_files> is used.
+in the configuration file, the default C<lib/data/markdown_files> is used.
 
 Each file can be thought of as a chapter within a single larger document
 comprised of all the individual files. Ideally, each file will have a single
@@ -509,8 +509,8 @@ After the defaults, you can list your routes:
          - another_web_page:
            file: '/convert/this/file/with/absolute/path.md'
 
-Routes must have either a C<dir> or C<file> property. Relative paths are
-relative to the C<file_root> default.
+Routes must have either a C<dir> or C<file> property. Paths can be absolute or
+relative. Relative paths are appended to the path in C<file_root>.
 
 The default options can be overridden for each route like so:
 
@@ -524,7 +524,6 @@ Consult the L<#Options> section for defaults for each of the options.
 The options that apply to directories accept a list of arguments, created like
 this:
 
-        routes:
           - another_page:
             dir: 'my_dir_containing_md_file'
             include_files:
