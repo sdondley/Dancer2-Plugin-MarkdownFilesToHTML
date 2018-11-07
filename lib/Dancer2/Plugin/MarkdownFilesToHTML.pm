@@ -1,4 +1,6 @@
 package Dancer2::Plugin::MarkdownFilesToHTML ;
+
+# ABSTRACT: Easy conversion of markdown documents to HTML for display in your Dancer2 website
 use 5.010; use strict; use warnings;
 
 use Carp;
@@ -269,9 +271,6 @@ sub _cache_data {
 __END__
 
 =head1 NAME
-
-MarkdownFilesToHTML - Easy conversion of markdown documents to HTML for display
-in your Dancer2 website
 
 =head1 SYNOPSIS
 
