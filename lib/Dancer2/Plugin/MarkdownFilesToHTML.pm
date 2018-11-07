@@ -168,6 +168,7 @@ sub mdfiles_2html {
 sub mdfile_2html {
 	my ($s, $file, $options) = @_;
 
+  my ($base)   = fileparse($file, qr/\.[^.]*/);
   # If options haven't been set yet, get defaults from cnofig file
   if (!$options->{set}) {
     ($options, $file) = $s->_get_options($options, $file);
@@ -180,12 +181,11 @@ sub mdfile_2html {
   }
 
   # generate unique cache file name appended with values of two options
-  my $cache_file = $file;
-  $cache_file =~ s/\///g;
-  $cache_file = File::Spec->catfile(
-                 $cache_dir,
-                 File::Spec->catfile(dirname($cache_file), basename($cache_file))
-                     . $options->{linkable_headers} . $options->{generate_toc});
+  my $cache_file = dirname($file);
+  my $sep = File::Spec->catfile('', '');
+  $cache_file =~ s/\Q$sep\E//g;
+  $cache_file = File::Spec->catfile($cache_dir,
+                 $cache_file . $base . $options->{linkable_headers} . $options->{generate_toc});
 
   # check for cache hit
   if (-f $cache_file && $options->{cache}) {
@@ -217,7 +217,6 @@ sub mdfile_2html {
 
   my @elements = $tree->look_down(_tag => qr/^h\d$/);
   my $toc      = HTML::TreeBuilder->new();
-  my ($base)   = fileparse($file, qr/\.[^.]*/);
   my $hdr_ct   = 0;
   foreach my $element (@elements) {
     my $id = 'header_' . ${hdr_ct};
