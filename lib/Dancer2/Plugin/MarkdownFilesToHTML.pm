@@ -184,7 +184,8 @@ sub mdfile_2html {
   $cache_file =~ s/\///g;
   $cache_file = File::Spec->catfile(
                  $cache_dir,
-                 $cache_file . $options->{linkable_headers} . $options->{generate_toc});
+                 File::Spec->catfile(dirname($cache_file), basename($cache_file))
+                     . $options->{linkable_headers} . $options->{generate_toc});
 
   # check for cache hit
   if (-f $cache_file && $options->{cache}) {

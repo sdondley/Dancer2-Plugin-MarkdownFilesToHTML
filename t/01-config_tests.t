@@ -8,6 +8,11 @@ use Test::NoWarnings;
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
+  $SIG{__WARN__} = sub {
+    my $warn = shift;
+    return if $warn =~ /fallback to PP version/;
+    warn $warn;
+  };
 }
 
 # Set up our app
@@ -44,6 +49,8 @@ use HTTP::Request::Common;
 }
 
 ### TESTS ###
+# warnings are thrown with
+&Test::NoWarnings::clear_warnings;
 
 set_failure_handler( sub { clean_cache_dir(); } );
 
