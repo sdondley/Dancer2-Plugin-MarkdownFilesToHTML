@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.013     2018-11-07 09:46:59-05:00 America/New_York
   - attempt fixes for systems with failing smoke tests
 
 0.012     2018-11-06 20:34:30-05:00 America/New_York
