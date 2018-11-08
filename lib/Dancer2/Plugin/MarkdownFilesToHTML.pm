@@ -302,14 +302,14 @@ document or all the markdown documents in a directory to HTML. Optionally, it
 can return a second HTML string containing a hierarchical table of contents
 based on the contents of the markdown. The HTML will be displayed with the
 templates and routes specified in Dancer2's config file. See the
-C<CONFIGURATION> section for more details. To generate HTML from within your
-app's code, refer to the C<KEYWORDS> section.
+L<CONFIGURATION> section for more details. To generate HTML from within your
+app's code, refer to the L<KEYWORDS> section.
 
 This module relies on the L<Text::Markdown::Hoedown> module to execute the
 markdown conversions which uses a fast C module. To further enhance performance,
 a caching mechanism using L<Storable> is employed for each converted markdown
 file so markdown to HTML conversions are avoided except for new and updated
-markdown files. See the C<MARKDOWN CONVERSION NOTES> for more details on the
+markdown files. See the L</"MARKDOWN CONVERSION NOTES"> for more details on the
 conversion process.
 
 =head1 CONFIGURATION
@@ -354,7 +354,7 @@ Within each route, the default options can be overridden:
            generate_toc: 0
            header_class: ''
 
-Consult the L<#Options> section for defaults for each of the options.
+Consult the L</OPTIONS> section for defaults for each of the options.
 
 The options that apply to directories accept a list of arguments, created like
 this:
@@ -369,12 +369,12 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
-All of the L<OPTIONS> listed below are supported by the configuration file.
+All of the L</OPTIONS> listed below are supported by the configuration file.
 
 =keyword md2html($resource [ \%options ])
 
 Converts a single markdown file or all the files in a directory into HTML.
-An optional hashref can be passed with options as documented in the L<OPTIONS>
+An optional hashref can be passed with options as documented in the L</OPTIONS>
 section below.
 
 Examples:
@@ -396,8 +396,8 @@ chapter. All files present in a directory are markdown documents.  Hidden files
 (those beginning with a '.') are automatically excluded. These defaults can be
 modified.
 
-L<General Options> apply to both files and directories. See the L<Directory
-Options> section for options that let you control how files in a directory are
+L</"General Options"> apply to both files and directories. See the L</"Directory
+Options"> section for options that let you control how files in a directory are
 processed and selected.
 
 =head1 OPTIONS
