@@ -8,12 +8,14 @@ use Test::Most tests => 16, 'die';
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
+
   $SIG{__WARN__} = sub {
     my $warn = shift;
     return if $warn =~ /fallback to PP version/;
     warn $warn;
   };
 }
+
 
 # Set up our app
 
