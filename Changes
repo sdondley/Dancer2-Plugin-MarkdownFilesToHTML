@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.015     2018-11-08 11:38:07-05:00 America/New_York
   - remove unneeded test code
   - add and improve code comments
   - documentation rearrangement and improvements
