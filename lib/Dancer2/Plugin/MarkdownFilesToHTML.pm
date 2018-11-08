@@ -12,172 +12,154 @@ use HTML::TreeBuilder;
 use File::Spec::Functions qw(catfile);
 use Text::Markdown::Hoedown;
 
-plugin_keywords qw( mdfile_2html mdfiles_2html );
+plugin_keywords qw( md2html );
+
+has options             => (is => 'rw', default => sub { {} });
+has cache               => (is => 'ro', from_config => 'defaults.cache',               default => sub { 1 } );
+has layout              => (is => 'ro', from_config => 'defaults.layout',              default => sub { 'main.tt' } );
+has template            => (is => 'ro', from_config => 'defaults.template',            default => sub { 'index.tt' } );
+has file_root           => (is => 'ro', from_config => 'defaults.file_root',           default => sub { 'lib/data/markdown_files' } );
+has route_root          => (is => 'ro', from_config => 'defaults.route_root',          default => sub { '' } );
+has header_class        => (is => 'ro', from_config => 'defaults.header_class',        default => sub { '' } );
+has generate_toc        => (is => 'ro', from_config => 'defaults.generate_toc',        default => sub { 0  } );
+has exclude_files       => (is => 'ro', from_config => 'defaults.exclude_files',       default => sub { [] } );
+has include_files       => (is => 'ro', from_config => 'defaults.include_files',       default => sub { [] } );
+has linkable_headers    => (is => 'ro', from_config => 'defaults.linkable_headers',    default => sub { 0  } );
+has markdown_extensions => (is => 'ro', from_config => 'defaults.markdown_extensions', default => sub { [] } );
 
 # Builds the routes from config file
 sub BUILD {
   my $s      = shift;
   my $app    = $s->app;
   my $config = $s->config;
-  #print Dumper $config;
 
   # add routes from config file
   foreach my $route (@{$config->{routes}}) {
 
-    # validate resource arguments supplied from config file
+    # validate arguments supplied from config file
     if ((ref $route) ne 'HASH') {
       die 'Config file misconfigured. Check syntax or consult documentation.';
     }
 
-    my ($path) = keys %$route;
-    my $dir    = $route->{$path}{dir};
-    my $file   = $route->{$path}{file};
-
-    if (defined $dir && defined $file) {
-      die 'Ambiguous route. Both a file and directory given. Supply only one.';
-    }
-    my $method = defined $dir ? 'mdfiles_2html' : 'mdfile_2html';
-    my $resource = $dir // $file;
-
-    # fetch options to help determine if resource exists
-    my $options = _set_options($route, $path, $config);
-
-    my $is_abs = File::Spec->file_name_is_absolute($resource);
-    if (!$is_abs) {
-      $resource = File::Spec->catfile($options->{file_root}, $resource);
-    }
-
-    if (!-e $resource) {
-      die "File or directory you associated with $path route does not exist.";
-    }
-
-    if (-f $resource && $dir) {
-      die 'Your route expects a directory but you gave a file: ' . $resource;
-    }
-
-    if (-d $resource && $file) {
-      die 'Your route expects a file but you gave a directory: ' . $resource;
-    }
+    $s->_set_options($route);
 
     # Do the route addin'
+
+    my %options = %{$s->options};
     $s->app->add_route(
       method => 'get',
-      regexp => '/' . $options->{route_root} . $path,
+      regexp => '/' . $options{route_root} . $options{path},
       code => sub {
         my $app = shift;
-        my ($html, $toc) = $s->$method($resource, $options);
-        $app->template($options->{template},
+        my ($html, $toc) = $s->md2html($options{resource}, \%options);
+        $app->template($options{template},
                       { html => $html, toc => $toc },
-                      { layout => $options->{layout} });
+                      { layout => $options{layout} });
       },
     );
   }
 }
 
-# function for setting options
 sub _set_options {
-  my ($route, $path, $config) = @_;
+  my $s = shift;
+  my $options = shift;
 
-  my %defaults = (
-    route_root          => '',        template            => 'index.tt',
-    layout              => 'main.tt', header_class        => '',
-    generate_toc        => 0,         linkable_headers    => 0,
-    cache               => 1,         exclude_files       => '',
-    include_files       => '',        markdown_extensions => '',
-    file_root           => 'lib/data/markdown_files',
-  );
+  my @settings = qw(
+    cache layout template file_root route_root header_class generate_toc
+    exclude_files include_files linkable_headers markdown_extensions );
 
-  my %options = ();
-  foreach my $option (keys %defaults) {
-    if ($path) {
-      $options{$option} = $route->{$path}{$option} // $config->{defaults}{$option} // $defaults{$option};
-    } else {
-      $options{$option} = $route->{$option} // $config->{defaults}{$option} // $defaults{$option};
-    }
+  my ($path) = keys %$options;
+  my $defaults = $s->config->{defaults};
+  my $local_options = (ref $options->{$path}) ? $options->{$path} : $options;
+  my %options = (%$defaults, %$local_options);
+
+  foreach my $setting (@settings) {
+    $options{$setting} = $options->{$setting} //= $s->$setting;
   }
 
-  if ($options{generate_toc}) { $options{linkable_headers} = 1; }
-  if ($options{route_root})   { $options{route_root} .= '/'; }
   $options{set} = 1;
+  $options{path}             = $path;
+  $options{route_root}       .= '/' if $options{route_root};
+  $options{linkable_headers} = 1   if  $options{generate_toc};
 
-  return \%options;
-}
-
-sub _get_options {
-  my $s = shift;
-  my $options = shift;
-  my $resource = shift;
-
-  $options = _set_options($options, '', $s->config);
-  my $is_abs = File::Spec->file_name_is_absolute($resource);
+  my $is_abs = File::Spec->file_name_is_absolute($options{resource});
   if (!$is_abs) {
-    $resource = File::Spec->catfile($options->{file_root}, $resource);
+    $options{resource} = File::Spec->catfile($options{file_root}, $options{resource});
   }
-  return ($options, $resource);
+
+  $s->options(\%options);
+
 }
 
-# Gathers lists of files in a directory and sends them off to mdfile_2html for
-# parsing or cache retrieval
-sub mdfiles_2html {
-  my $s = shift;
-  my $dir = shift;
-  my $options = shift;
+# Keyword for generating HTML from a markdown resource (file or directory)
+# either through cache retrieval or parsing of the resource
+sub md2html {
+  my ($s, $resource, $options) = @_;
 
-  # If options haven't been set yet, get defaults from cnofig file
+  # If keyword called directly, options won't be set yet
   if (!$options->{set}) {
-    ($options, $dir) = $s->_get_options($options, $dir);
+    $options->{resource} = $resource;
+    $s->_set_options($options);
+  } else {
+    $s->options($options);
+  }
+
+  if (!-e $s->options->{resource}) {
+    my $return = 'This route is not properly configured. Resource: '
+                  . $s->options->{resource} . ' does not exist on the server.';
+    $s->options({});
+    return wantarray ?  ($return, '') : $return;
   }
 
   my $html = '';
   my $toc = '';
 
-  # gather the files according the options supplied
   my @files = ();
-  if ($options->{include_files}) {
-    my @files = map { File::Spec->catfile($dir, $_) } @{$options->{include_files}};
+  if (-f $s->options->{resource}) {
+    push @files, $s->options->{resource};
   } else {
-    opendir my $d, $dir or die "Cannot open directory: $!";
-    @files = grep { $_ !~ /^\./ } readdir $d;
-    closedir $d;
-    if ($options->{markdown_extensions}) {
+    my $dir = $s->options->{resource};
+    # gather the files according the options supplied
+    if (@{$s->options->{include_files}}) {
+      my @files = @{$s->options->{include_files}};
+    } else {
+      opendir my $d, $dir or die "Cannot open directory: $!";
+      @files = grep { $_ !~ /^\./ } readdir $d;
+      closedir $d;
       my @matching_files = ();
-      foreach my $md_ext (@{$options->{markdown_extensions}}) {
+      foreach my $md_ext (@{$s->options->{markdown_extensions}}) {
         push @matching_files, grep { $_ =~ /\.$md_ext$/ } @files;
       }
-      @files = @matching_files;
+      @files = @matching_files if @matching_files;
     }
-  }
 
-  if ($options->{exclude_files}) {
-    foreach my $excluded_file (@{$options->{exclude_files}}) {
+    foreach my $excluded_file (@{$s->options->{exclude_files}}) {
       @files = grep { $_ ne $excluded_file } @files;
     }
+
+    @files = map { File::Spec->catfile($dir, $_) } @files;
   }
 
   # concatenate html and toc into two strings
   foreach my $file (sort @files) {
-    my ($file_html, $file_toc)  = $s->mdfile_2html(File::Spec->catfile($dir, $file), $options);
+    my ($file_html, $file_toc)  = $s->_mdfile_2html($file);
     $html                      .= $file_html;
-    $toc                       .= $file_toc;
+    $toc                       .= $file_toc || '';
   }
-  return wantarray ?  ($html, $toc) : $html;
+  return wantarray ? ($html, $toc) : $html;
 }
 
 # Sends the markdown file to get parsed or retrieves html version from cache,
 # if available. Also generates the table of contents.
-sub mdfile_2html {
-	my ($s, $file, $options) = @_;
+sub _mdfile_2html {
+  my $s = shift;
+  my $file = shift;
 
   # chop off extension
   my ($base)   = fileparse($file, qr/\.[^.]*/);
 
-  # If options haven't been set yet, get defaults from cnofig file
-  if (!$options->{set}) {
-    ($options, $file) = $s->_get_options($options, $file);
-  }
-
   # generate the cache directory if it doesn't exist
-  my $cache_dir = File::Spec->catfile(dirname($options->{'file_root'}), 'md_file_cache');
+  my $cache_dir = File::Spec->catfile(dirname($s->options->{'file_root'}), 'md_file_cache');
   if (!-d $cache_dir) {
     make_path $cache_dir or die "Cannot make cache directory $!";
   }
@@ -187,11 +169,14 @@ sub mdfile_2html {
   my $sep = File::Spec->catfile('', '');
   $cache_file =~ s/\Q$sep\E//g;
   $cache_file = File::Spec->catfile($cache_dir,
-                 $cache_file . $base . $options->{linkable_headers} . $options->{generate_toc});
+                 $cache_file . $base . $s->options->{linkable_headers} . $s->options->{generate_toc}
+                             . $s->options->{header_class} =~ s/ //gr);
 
   # check for cache hit
-  if (-f $cache_file && $options->{cache}) {
+  # TODO: Save options in separate file so they can be compared
+  if (-f $cache_file && $s->options->{cache}) {
     if (-M $cache_file eq -M $file) {
+      print Dumper 'cache hit' if $ENV{DANCER_ENVIRONMENT} && $ENV{DANCER_ENVIRONMENT} eq 'testing';
       my $data = retrieve $cache_file;
       return ($data->{html}, $data->{toc});
     }
@@ -206,27 +191,34 @@ sub mdfile_2html {
     $markdown = <$md>;
     close $md;
   }
-  my $out  = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE);
+  my $out  = markdown($markdown, extensions => HOEDOWN_EXT_FENCED_CODE, toc_nesting_lvl => 0);
   my $tree = HTML::TreeBuilder->new_from_content($out);
-  _add_single_line_class($tree);
+
+  my @code_els = $tree->find_by_tag_name('code');
+  foreach my $code_el (@code_els) {
+    if (!$code_el->left && !$code_el->right) {
+      $code_el->attr('class' => 'single-line');
+    }
+  }
 
   # See if we can cache and return the output without further processing
   # generate_toc makes linkable_headers true so we just need to test linkable_headers option
-  if (!$options->{linkable_headers}) {
-    my ($html, $toc) = $s->_cache_data($options, $cache_file, $file, $tree->guts->as_HTML);
-    return wantarray ?  ($html, $toc) : $html;
+  if (!$s->options->{linkable_headers} && !$s->options->{header_class}) {
+    my $html = $tree->guts->as_HTML;
+    $s->_cache_data($s->options, $cache_file, $file, $html);
+    return ($html, '');
   }
 
   # generate linkable headers along with toc if option for it is set
   my @elements = $tree->look_down(_tag => qr/^h\d$/);
-  my $toc      = HTML::TreeBuilder->new();
+  my $toc      = HTML::TreeBuilder->new() if $s->options->{generate_toc};
   my $hdr_ct   = 0;
   foreach my $element (@elements) {
     my $id = 'header_' . ${hdr_ct};
     $hdr_ct++;
     $element->attr('id', $id . '_' . $base);
-    $element->attr('class' => $options->{header_class}) if $options->{header_class};
-    if ($options->{generate_toc}) {
+    $element->attr('class' => $s->options->{header_class}) if $s->options->{header_class};
+    if ($s->options->{generate_toc}) {
       my ($level) = $element->tag =~ /(\d)/;
       my $toc_link = HTML::Element->new('a', href=> "#${id}_${base}", class => 'header_' . $level);
       $toc_link->push_content($element->as_text);
@@ -237,37 +229,23 @@ sub mdfile_2html {
 
   # Generate the final HTML from trees and cache
   # "guts" method gets rid of <html> and <body> tags added by TreeBuilder
-  return $s->_cache_data($options, $cache_file, $file,
-                         $tree->guts->as_HTML, $toc->guts->as_HTML);
+  my ($html, $toc_out) = ($tree->guts->as_HTML, $toc ? $toc->guts->as_HTML : '');
+  $s->_cache_data($cache_file, $file, $html, $toc_out);
+  return ($html, $toc_out);
 }
 
-# add a special class for code that has no siblings so it can be styled
-sub _add_single_line_class {
-  my $tree = shift;
-  my @code_els = $tree->find_by_tag_name('code');
-  foreach my $code_el (@code_els) {
-    if (!$code_el->left && !$code_el->right) {
-      $code_el->attr('class' => 'single-line');
-    }
-  }
-}
-
-# cache the data
 sub _cache_data {
-  my ($s, $options, $cache_file, $file, $content, $toc) = @_;
+  my ($s, $cache_file, $file, $content, $toc) = @_;
   $toc //= '';
 
-  if ($options->{cache}) {
+  if ($s->options->{cache}) {
     store { html => $content, toc => $toc }, $cache_file;
     my ($read, $write) = (stat($file))[8,9];
     utime($read, $write, $cache_file);
   }
-
-  return ($content, $toc);
 }
 
 1;
-
 
 __END__
 
@@ -297,13 +275,13 @@ the Dancer2 C<config.yml> file:
         template: 'index.tt'                     # template file to use
         layout: 'main.tt'                        # layout file to use
       routes:                                    # list of conversion routes
-        - dzil_tutorial:
-            dir: 'Dist-Zilla-for-Beginners'      # dir containing markdown files
+        - dzil_tutorial:                         # the route to the page
+            resource: 'Dist-Zilla-for-Beginners' # dir containing markdown files
             markdown_extensions:
               - md
               - mdwn
-        - another_tutorial:
-            file: 'intro.md'                     # markdown file to be converted
+        - single_file:
+            resource: 'intro.md'                 # markdown file to be converted
             template: 'doc.tt'                   # defaults can be overridden
             generate_toc: 0
             linkable_headers: 0
@@ -311,26 +289,26 @@ the Dancer2 C<config.yml> file:
 See the C<CONFIGURATION> section below for more details on configuration
 settings.
 
-Conversion with Perl code can also be accomplished using the keywords provided by
-this is plugin, like so:
+Markdown file conversion can also be accomplished using the C<md2html> keyword,
+like so:
 
   # convert a single markdown file to HTML
-  $html = mdfile_2html('/path/to/file.md', { header_class => 'header_style' });
+  $html = md2html('/path/to/file.md', { header_class => 'header_style' });
 
   # convert directory of markdown files to HTML and generate table of contents
-  ($html, $toc) = mdfiles_2html('/dir/with/markdown/files', { generate_toc => 1 });
+  ($html, $toc) = md2html('/dir/with/markdown/files', { generate_toc => 1 });
 
 =head1 DESCRIPTION
 
-This module converts markdown files to an HTML string for use by the Dancer2 web
-app framework. Using the Dancer2 config file, multiple routes can be established
-in the web app, with each route converting a single markdown document or all the
-markdown documents in a directory to HTML. Optionally, it can return a second
-HTML string containing a hierarchical table of contents based on the contents of
-the markdown documents. The HTML will be displayed with the templates and routes
-specified in Dancer2's config file. See the C<CONFIGURATION> section for more
-details. To generate HTML from within your app's code, refer to the C<KEYWORDS>
-section.
+This module converts markdown files to an HTML string for output to the Dancer2
+web app framework. Using the Dancer2 config file, multiple routes can be
+established in the web app, with each route converting a single markdown
+document or all the markdown documents in a directory to HTML. Optionally, it
+can return a second HTML string containing a hierarchical table of contents
+based on the contents of the markdown. The HTML will be displayed with the
+templates and routes specified in Dancer2's config file. See the
+C<CONFIGURATION> section for more details. To generate HTML from within your
+app's code, refer to the C<KEYWORDS> section.
 
 This module relies on the L<Text::Markdown::Hoedown> module to execute the
 markdown conversions which uses a fast C module. To further enhance performance,
@@ -341,15 +319,12 @@ conversion process.
 
 =head1 CONFIGURATION
 
-Modifying the Dancer2 C<config.yml> file to associate routes with the
-HTML generatd by the converted markdown files to makes it exceedingly easy to
-add pages to your website. Unless you need to modify the output of the HTML
-generated by this module in some way, using the configuration file to generate
-the HTML is preferred over using keywords to.
+Use the Dancer2 C<config.yml> file for an easy way to associate routes with HTML
+generated from converted markdown files. Unless you need to modify the the HTML
+output by the module in some way, you should use the configuration file method
+for generating and displaying your HTML.
 
-All of the options listed above are supported by the configuration file.
-
-Configure the C<config.yml> file, usually located in the root of your Dancer2 app,
+Edit the C<config.yml> file, usually located in the root of your Dancer2 app,
 as follows:
 
   plugins:
@@ -369,18 +344,19 @@ After the defaults, you can list your routes:
 
        routes:
          - a_web_page:
-           dir: 'convert/all/files/in/this/dir/relative/to/file_root'
+           resource: 'convert/all/files/in/this/dir/relative/to/file_root'
          - another_web_page:
-           file: '/convert/this/file/with/absolute/path.md'
+           resource: '/convert/this/file/with/absolute/path.md'
 
-Routes must have either a C<dir> or C<file> property. Paths can be absolute or
-relative. Relative paths are appended to the path in C<file_root>.
+Routes must have a C<resource> property that provide a file or directory path to
+your markdown files. Paths can be absolute or relative. Relative paths are
+appended to the path in C<file_root>.
 
-The default options can be overridden for each route like so:
+Within each route, the default options can be overridden:
 
          - my_page
-           file: 'file.md'
-           toc: 0
+           resource: 'file.md'
+           generate_toc: 0
            header_class: ''
 
 Consult the L<#Options> section for defaults for each of the options.
@@ -389,7 +365,7 @@ The options that apply to directories accept a list of arguments, created like
 this:
 
           - another_page:
-            dir: 'my_dir_containing_md_file'
+            resource: 'my_dir_containing_md_files'
             include_files:
               - 'file4.md'
               - 'file2.md'
@@ -398,53 +374,44 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
-=keyword mdfile_2html($file, [ \%options ])
+All of the L<OPTIONS> listed below are supported by the configuration file.
 
-Converts a single markdown file into HTML. An optional hashref can be passed with
-options as documented in the L<OPTIONS> section below.
+=keyword md2html($resource [ \%options ])
 
-Example:
+Converts a single markdown file or all the files in a directory into HTML.
+An optional hashref can be passed with options as documented in the L<OPTIONS>
+section below.
 
-  my $html = mdfile_2html('/path/to/file', { header_class => 'my_style' });
+Examples:
 
-If the C<$file> argument is relative, it will be appended to the C<file_root>
-setting in the configuration file. If C<file_root> is not set in the
-configuration file, C<lib/data/markdown_files> is used.
+  ($html, $toc) = md2html('/path/to/file.md',
+                  { header_class => 'my_style', generate_toc +> 1 });
 
-=keyword mdfiles_2html($dir, [ \%options ]  )
+  $html) = md2html('/path/to/dir',
+                  { header_class => 'my_style', generate_toc +> 1 });
 
-Attempts to convert all the files present in a directory from markdown into a
-single HTML string.
+If the C<$resource> argument is relative, it will be appended to the
+C<file_root> setting in the configuration file. If C<file_root> is not set,
+C<lib/data/markdown_files> is used.
 
-Example:
+If a directory of files is convereted, each file can be thought of as a chapter
+within a single larger document comprised of all the individual files. Ideally,
+each file will have a single level 1 header tag to serve as the title for the
+chapter. All files present in a directory are markdown documents.  Hidden files
+(those beginning with a '.') are automatically excluded. These defaults can be
+modified.
 
-  my ($html, $toc) = mdfiles_2html('/path/to/dir/with/makrdown/files',
-                      { generate_toc => 1 });
-
-If the C<$dir> argument is relative, then it will be appended to the
-C<file_root> setting in the configuration file. If C<file_root> is not set
-in the configuration file, the default C<lib/data/markdown_files> is used.
-
-Each file can be thought of as a chapter within a single larger document
-comprised of all the individual files. Ideally, each file will have a single
-level 1 header tag to serve as the title for the chapter.
-
-The method asssumes all files present in a directory are markdown documents.
-Hidden files (those beginning with a '.') are automatically excluded. These
-defaults can be modified.
-
-All the L<General Options> avialable to the C<mdfile_2html> keyword apply to the
-C<mdfiles_html> keyword as well. See the L<Directory Options> section for more
-additional options that let you control how files in a directory are processed
-and selected.
+L<General Options> apply to both files and directories. See the L<Directory
+Options> section for options that let you control how files in a directory are
+processed and selected.
 
 =head1 OPTIONS
 
 =gen_option route_root => $route
 
-The root route is the route the individual conversion routes are attached to.
-For example, if the root route is C<tutorials>, a conversion route named C<perl>
-will be found at C<tutorials/perl>. If no root route is supplied, C</> is used.
+The route root is the route the individual conversion routes are attached to.
+For example, if the route root is C<tutorials>, a conversion route named C<perl>
+will be found at C<tutorials/perl>. If no route root is supplied, C</> is used.
 
 =gen_option file_root => $path
 
@@ -514,7 +481,6 @@ which files contain the markdown documents. This option is valid only with the
 C<mdfiles_2html>) keyword. Only files with the listed extension will be
 converted.
 
-
 =head1 MARKDOWN CONVERSION NOTES
 
 The module aims to support the dialect of markdown as implemented by GitHub with
@@ -542,7 +508,6 @@ used to generate the table of contents and associated anchor tags for linking to
 each of the sections within the document. If headers are not present in the
 markdown file, a useful table of contents cannot be generated.
 
-
 =head1 DEPENDENCIES
 
 L<Dancer2>
@@ -552,8 +517,8 @@ L<Text::Markup::Hoedown>
 
 =head2 Development status
 
-This module is currently in the beta stages and is actively supported and
-maintained. Suggestion for improvement are welcome.
+This module is being actively supported and
+maintained. Suggestions for improvement are welcome.
 
 =head1 SEE ALSO
 
