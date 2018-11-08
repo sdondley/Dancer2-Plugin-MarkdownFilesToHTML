@@ -4,16 +4,16 @@ use File::Path;
 use Data::Dumper qw(Dumper);
 use Test::NoWarnings;
 use Test::Output;
-use Test::Most tests => 16, 'die';
+use Test::Most tests => 17, 'die';
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
-
-  $SIG{__WARN__} = sub {
-    my $warn = shift;
-    return if $warn =~ /fallback to PP version/;
-    warn $warn;
-  };
+#
+#  $SIG{__WARN__} = sub {
+#    my $warn = shift;
+#    return if $warn =~ /fallback to PP version/;
+#    warn $warn;
+#  };
 }
 
 
@@ -120,7 +120,17 @@ my $skip = 0;
     ok( $res->is_success, 'passed option works');
     like ($res->content, qr/href="#header_0_aprereqs"/, 'generates toc');
     unlike ($res->content, qr/class="special"/, 'header class doesn\'t carry over');
-    stdout_like {$test->request( GET 'get_toc' )} qr/cache hit/, 'cache works';
+    stdout_like {$test->request( GET 'get_toc' )} qr/cache hit:.*\n.*cache hit:.*\n.*cache hit:/m, 'cache works';
+  }
+}
+
+{ # 16
+  SKIP: {
+    $skip = 0;
+    skip 'test_isolation', 1, if $skip;
+    $res = $test->request( GET 'no_resrouce' );
+    ok( $res->is_success, 'missing resource returns legit page' );
+    like ($res->content, qr/route is not properly configured/, 'displays proper message' );
   }
 }
 

@@ -9,3 +9,6 @@ plugins:
     routes:
       - dzil_tutorial:
           resource: 'dzil_tutorial'
+      - no_resrouce:
+          generate_toc: 1
+          resource: 'none.md'
