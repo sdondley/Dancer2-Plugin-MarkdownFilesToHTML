@@ -2,9 +2,9 @@ use strict;
 use warnings;
 use File::Path;
 use Data::Dumper qw(Dumper);
-use Test::More;
-use Test::Most tests => 11, 'die';
 use Test::NoWarnings;
+use Test::Output;
+use Test::Most tests => 16, 'die';
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
@@ -26,21 +26,28 @@ use HTTP::Request::Common;
 
   get '/' =>   sub { return template 'index' };
   get '/intro' => sub {
-    my $html = mdfile_2html('intro.md');
+    my $html = md2html('intro.md', {linkable_headers => 1});
+    template 'index.tt', {
+      html => $html,
+    },
+  };
+
+  get '/intro2' => sub {
+    my $html = md2html('intro.md');
     template 'index.tt', {
       html => $html,
     },
   };
 
   get '/all_tut_files' => sub {
-    my $html = mdfiles_2html('dzil_tutorial');
+    my $html = md2html('dzil_tutorial', { header_class => 'special' });
     template 'index.tt', {
       html => $html,
     },
   };
 
   get '/get_toc' => sub {
-    my ($html, $toc) = mdfiles_2html('dzil_tutorial', {generate_toc => 1});
+    my ($html, $toc) = md2html('dzil_tutorial', {generate_toc => 1});
     template 'index.tt', {
       html => $html,
       toc => $toc
@@ -51,7 +58,7 @@ use HTTP::Request::Common;
 ### TESTS ###
 # warnings are thrown with
 
-set_failure_handler( sub { clean_cache_dir(); } );
+set_failure_handler( sub { clean_cache_dir(); die; } );
 
 my $test = Plack::Test->create( TestApp->to_app );
 my $res;
@@ -78,36 +85,47 @@ my $skip = 0;
 { #4, 5
   SKIP: {
     skip 'test isolation', 2, if $skip;
-
     $res = $test->request( GET 'intro' );
     ok( $res->is_success, 'mdfile_2html call works');
     like ($res->content, qr/In the Beginning/, 'gets content');
   }
 }
 
-{ # 6, 7, 8
+{ #6, 7
   SKIP: {
     skip 'test isolation', 2, if $skip;
-    $res = $test->request( GET 'all_tut_files' );
-    ok( $res->is_success, 'mdfiles_2html call works');
-    like ($res->content, qr/<li>Beginning developers/, 'gets content');
-    like ($res->content, qr/class="single-line"/, 'can add single line class');
+    $res = $test->request( GET 'intro2' );
+    ok( $res->is_success, 'mdfile_2html call works');
+    unlike $res->content, qr/id="header_/, 'no headers added';
   }
 }
 
-{ # 9, 10
+{ # 8, 9, 10, 11
   SKIP: {
-    skip 'test_isolation', 2, if $skip;
+    skip 'test isolation', 4, if $skip;
+    $res = $test->request( GET 'all_tut_files' );
+    ok( $res->is_success, 'gets all tutorial files');
+    like ($res->content, qr/<li>Beginning developers/, 'gets content');
+    like ($res->content, qr/class="single-line"/, 'can add single line class');
+    like ($res->content, qr/class="special"/, 'can add header class');
+  }
+}
+
+{ # 12, 13, 14, 15
+  SKIP: {
+    skip 'test_isolation', 3, if $skip;
     $res = $test->request( GET 'get_toc' );
     ok( $res->is_success, 'passed option works');
     like ($res->content, qr/href="#header_0_aprereqs"/, 'generates toc');
+    unlike ($res->content, qr/class="special"/, 'header class doesn\'t carry over');
+    stdout_like {$test->request( GET 'get_toc' )} qr/cache hit/, 'cache works';
   }
 }
 
-# Cleanup our mess
+# Delete cached files
 clean_cache_dir();
 
 sub clean_cache_dir {
-  rmtree 't/data/md_file_cache';
+  rmtree 't/data/md_file_cache' or die "Unable to delete cache directory\n";
   mkdir  't/data/md_file_cache' or die "Unable to make cache directory\n";
 }
