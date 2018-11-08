@@ -93,8 +93,7 @@ sub _set_options {
 
 }
 
-# Keyword for generating HTML from a markdown resource (file or directory)
-# either through cache retrieval or parsing of the resource
+# Keyword for generating HTML
 sub md2html {
   my ($s, $resource, $options) = @_;
 
