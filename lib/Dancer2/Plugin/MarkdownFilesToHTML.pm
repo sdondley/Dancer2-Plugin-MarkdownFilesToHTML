@@ -46,7 +46,6 @@ sub BUILD {
     $s->_set_options($route);
 
     # Do the route addin'
-
     my %options = %{$s->options};
     $s->app->add_route(
       method => 'get',
@@ -108,8 +107,7 @@ sub md2html {
   if (!-e $s->options->{resource}) {
     my $return = 'This route is not properly configured. Resource: '
                   . $s->options->{resource} . ' does not exist on the server.';
-    $s->options({});
-    return wantarray ?  ($return, '') : $return;
+    return ($return, undef);
   }
 
   my $html = '';
@@ -165,13 +163,18 @@ sub _mdfile_2html {
     make_path $cache_dir or die "Cannot make cache directory $!";
   }
 
-  # generate unique cache file name appended with values of two options
+  # generate unique cache file name appended with options
   my $cache_file = dirname($file);
   my $sep = File::Spec->catfile('', '');
   $cache_file =~ s/\Q$sep\E//g;
+  my $header_classes = $s->options->{header_class};
+  $header_classes =~ s/ //g;
   $cache_file = File::Spec->catfile($cache_dir,
-                 $cache_file . $base . $s->options->{linkable_headers} . $s->options->{generate_toc}
-                             . $s->options->{header_class} =~ s/ //gr);
+                                    $cache_file
+                                    . $base
+                                    . $s->options->{linkable_headers}
+                                    . $s->options->{generate_toc}
+                                    . $header_classes);
 
   # check for cache hit
   # TODO: Save options in separate file so they can be compared
