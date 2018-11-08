@@ -176,7 +176,7 @@ sub _mdfile_2html {
   # TODO: Save options in separate file so they can be compared
   if (-f $cache_file && $s->options->{cache}) {
     if (-M $cache_file eq -M $file) {
-      print Dumper 'cache hit' if $ENV{DANCER_ENVIRONMENT} && $ENV{DANCER_ENVIRONMENT} eq 'testing';
+      print Dumper 'cache hit: '. $file if $ENV{DANCER_ENVIRONMENT} && $ENV{DANCER_ENVIRONMENT} eq 'testing';
       my $data = retrieve $cache_file;
       return ($data->{html}, $data->{toc});
     }
@@ -205,7 +205,7 @@ sub _mdfile_2html {
   # generate_toc makes linkable_headers true so we just need to test linkable_headers option
   if (!$s->options->{linkable_headers} && !$s->options->{header_class}) {
     my $html = $tree->guts->as_HTML;
-    $s->_cache_data($s->options, $cache_file, $file, $html);
+    _cache_data($cache_file, $file, $html) if $s->options->{cache};
     return ($html, '');
   }
 
@@ -230,19 +230,17 @@ sub _mdfile_2html {
   # Generate the final HTML from trees and cache
   # "guts" method gets rid of <html> and <body> tags added by TreeBuilder
   my ($html, $toc_out) = ($tree->guts->as_HTML, $toc ? $toc->guts->as_HTML : '');
-  $s->_cache_data($cache_file, $file, $html, $toc_out);
+  _cache_data($cache_file, $file, $html, $toc_out);
   return ($html, $toc_out);
 }
 
 sub _cache_data {
-  my ($s, $cache_file, $file, $content, $toc) = @_;
+  my ($cache_file, $file, $content, $toc) = @_;
   $toc //= '';
 
-  if ($s->options->{cache}) {
-    store { html => $content, toc => $toc }, $cache_file;
-    my ($read, $write) = (stat($file))[8,9];
-    utime($read, $write, $cache_file);
-  }
+  store { html => $content, toc => $toc }, $cache_file;
+  my ($read, $write) = (stat($file))[8,9];
+  utime($read, $write, $cache_file);
 }
 
 1;
