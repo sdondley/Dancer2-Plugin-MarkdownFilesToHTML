@@ -249,8 +249,6 @@ sub _cache_data {
 
 __END__
 
-=head1 NAME
-
 =head1 SYNOPSIS
 
 Include the plugin in your Dancer2 app:
