@@ -5,6 +5,7 @@ Revision history for {{$dist->name}}
   - Remove NAME section from inline POD
   - Fix up section links in POD
   - remove newer regex so it will work with older versions of perl
+  - change "route_root" option to "prefix"
 
 0.015     2018-11-08 11:38:07-05:00 America/New_York
   - remove unneeded test code

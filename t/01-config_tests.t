@@ -4,16 +4,16 @@ use File::Path;
 use Data::Dumper qw(Dumper);
 use Test::NoWarnings;
 use Test::Output;
-use Test::Most tests => 17, 'die';
+use Test::Most tests => 18, 'die';
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
-#
-#  $SIG{__WARN__} = sub {
-#    my $warn = shift;
-#    return if $warn =~ /fallback to PP version/;
-#    warn $warn;
-#  };
+
+  $SIG{__WARN__} = sub {
+    my $warn = shift;
+    return if $warn =~ /fallback to PP version/;
+    warn $warn;
+  };
 }
 
 
