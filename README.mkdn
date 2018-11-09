@@ -4,7 +4,7 @@ Dancer2::Plugin::MarkdownFilesToHTML - Easy conversion of markdown documents to 
 
 # VERSION
 
-version 0.016
+version 0.017
 
 # SYNOPSIS
 
@@ -20,7 +20,7 @@ established in the Dancer2 `config.yml` file:
       MarkdownFilesToHTML:
         defaults:
           header_class: 'elegantshadow scrollspy'  # class added to headers
-          prefix: 'tutorials'                  # where routes get attached to
+          prefix: 'tutorials'                      # where routes get attached to
           file_root: 'lib/data/markdown_files'     # location of markdown files
           generate_toc: 1                          # generate a table of contents
           linkable_headers: 1                      # create unique id for headers
@@ -38,7 +38,7 @@ established in the Dancer2 `config.yml` file:
               generate_toc: 0
               linkable_headers: 0
 
-See the `CONFIGURATION` section below for more details on configuration
+See the ["CONFIGURATION"](#configuration) section below for more details on configuration
 settings.
 
 Markdown file conversion can also be accomplished with the `md2html` keyword,
@@ -50,7 +50,7 @@ like so:
     # convert directory of markdown files to HTML and generate table of contents
     ($html, $toc) = md2html('/dir/with/markdown/files', { generate_toc => 1 });
 
-See the `KEYWORDS` section for more informaiton on the `md2html` keyword.
+See the ["KEYWORDS"](#keywords) section for more informaiton on the `md2html` keyword.
 
 # DESCRIPTION
 

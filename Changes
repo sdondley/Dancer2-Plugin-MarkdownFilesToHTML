@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.017     2018-11-08 21:06:25-05:00 America/New_York
   - fix critical bug where local options were getting ignored
   - add test to see if prefixes work as advertised
   - fix internal document links
