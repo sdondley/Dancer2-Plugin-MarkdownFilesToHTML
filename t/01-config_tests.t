@@ -4,7 +4,7 @@ use File::Path;
 use Data::Dumper qw(Dumper);
 use Test::NoWarnings;
 use Test::Output;
-use Test::Most tests => 18, 'die';
+use Test::Most tests => 19, 'die';
 
 BEGIN {
   $ENV{'DANCER_ENVIRONMENT'} = 'testing';
@@ -124,7 +124,7 @@ my $skip = 0;
   }
 }
 
-{ # 16, 17
+{ # 16, 17, 18
   SKIP: {
     $skip = 0;
     skip 'test_isolation', 3, if $skip;
