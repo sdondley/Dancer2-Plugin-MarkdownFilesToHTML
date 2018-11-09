@@ -1,10 +1,10 @@
 # NAME
 
-Dancer2::Plugin::MarkdownFilesToHTML
+Dancer2::Plugin::MarkdownFilesToHTML - Easy conversion of markdown documents to HTML for display in your Dancer2 website
 
 # VERSION
 
-version 0.015
+version 0.016
 
 # SYNOPSIS
 
@@ -12,15 +12,15 @@ Include the plugin in your Dancer2 app:
 
     use Dancer2::Plugin::MarkdownFilesToHTML;
 
-No other perl code is necessary. Routes can be established to display the HTML
-associated with a directory of markdown documents or a single document using
-the Dancer2 `config.yml` file:
+No other perl code is necessary. Route handlers for displaying the HTML
+associated with a collection of markdown documents or a single document can be
+established in the Dancer2 `config.yml` file:
 
     plugins:
       MarkdownFilesToHTML:
         defaults:
           header_class: 'elegantshadow scrollspy'  # class added to headers
-          route_root: 'tutorials'                  # where routes get attached to
+          prefix: 'tutorials'                  # where routes get attached to
           file_root: 'lib/data/markdown_files'     # location of markdown files
           generate_toc: 1                          # generate a table of contents
           linkable_headers: 1                      # create unique id for headers
@@ -28,11 +28,11 @@ the Dancer2 `config.yml` file:
           layout: 'main.tt'                        # layout file to use
         routes:                                    # list of conversion routes
           - dzil_tutorial:                         # the route to the page
-              resource: 'Dist-Zilla-for-Beginners' # dir containing markdown files
+              resource: 'Dist-Zilla-for-Beginners' # dir with collection of files
               markdown_extensions:
                 - md
                 - mdwn
-          - single_file:
+          - introduction
               resource: 'intro.md'                 # markdown file to be converted
               template: 'doc.tt'                   # defaults can be overridden
               generate_toc: 0
@@ -41,7 +41,7 @@ the Dancer2 `config.yml` file:
 See the `CONFIGURATION` section below for more details on configuration
 settings.
 
-Markdown file conversion can also be accomplished using the `md2html` keyword,
+Markdown file conversion can also be accomplished with the `md2html` keyword,
 like so:
 
     # convert a single markdown file to HTML
@@ -50,24 +50,24 @@ like so:
     # convert directory of markdown files to HTML and generate table of contents
     ($html, $toc) = md2html('/dir/with/markdown/files', { generate_toc => 1 });
 
+See the `KEYWORDS` section for more informaiton on the `md2html` keyword.
+
 # DESCRIPTION
 
 This module converts markdown files to an HTML string for output to the Dancer2
 web app framework. Using the Dancer2 config file, multiple routes can be
 established in the web app, with each route converting a single markdown
-document or all the markdown documents in a directory to HTML. Optionally, it
-can return a second HTML string containing a hierarchical table of contents
-based on the contents of the markdown. The HTML will be displayed with the
-templates and routes specified in Dancer2's config file. See the
-`CONFIGURATION` section for more details. To generate HTML from within your
-app's code, refer to the `KEYWORDS` section.
+document or markdown documents in a directory to HTML. Optionally, it a second
+HTML string containing a hierarchical table of contents based on the contents of
+the markdown can also be returned. The `md2html` keyword is provided if you
+wish to perform conversions from within an app's module.
 
 This module relies on the [Text::Markdown::Hoedown](https://metacpan.org/pod/Text::Markdown::Hoedown) module to execute the
-markdown conversions which uses a fast C module. To further enhance performance,
-a caching mechanism using [Storable](https://metacpan.org/pod/Storable) is employed for each converted markdown
-file so markdown to HTML conversions are avoided except for new and updated
-markdown files. See the `MARKDOWN CONVERSION NOTES` for more details on the
-conversion process.
+markdown conversions which using a fast C module. To further enhance
+performance, a basic caching mechanism using [Storable](https://metacpan.org/pod/Storable) is employed for each
+converted markdown file so markdown to HTML conversions are avoided except for
+new and updated markdown files. See the ["MARKDOWN CONVERSION NOTES"](#markdown-conversion-notes) for more
+details on the conversion process.
 
 # CONFIGURATION
 
@@ -86,7 +86,7 @@ Follow these two lines with your default settings:
 
       defaults:
         header_class: 'my_header classes here'
-        route_root: 'content'
+        prefix: 'content'
         file_root: '/lib/data/content'
         genereate_toc: 1
 
@@ -111,7 +111,7 @@ Within each route, the default options can be overridden:
            generate_toc: 0
            header_class: ''
 
-Consult the [#Options](https://metacpan.org/pod/#Options) section for defaults for each of the options.
+Consult the ["OPTIONS"](#options) section for defaults for each of the options.
 
 The options that apply to directories accept a list of arguments, created like
 this:
@@ -126,14 +126,14 @@ this:
 
 Now only the four files listed get processed in the order listed above.
 
-All of the [OPTIONS](https://metacpan.org/pod/OPTIONS) listed below are supported by the configuration file.
+All of the ["OPTIONS"](#options) listed below are supported by the configuration file.
 
 # KEYWORDS
 
 ## md2html($resource \[ \\%options \])
 
 Converts a single markdown file or all the files in a directory into HTML.
-An optional hashref can be passed with options as documented in the [OPTIONS](https://metacpan.org/pod/OPTIONS)
+An optional hashref can be passed with options as documented in the ["OPTIONS"](#options)
 section below.
 
 Examples:
@@ -155,20 +155,19 @@ chapter. All files present in a directory are markdown documents.  Hidden files
 (those beginning with a '.') are automatically excluded. These defaults can be
 modified.
 
-["General Options"](#general-options) apply to both files and directories. See the [Directory
-Options](https://metacpan.org/pod/Directory
-Options) section for options that let you control how files in a directory are
-processed and selected.
-
 # OPTIONS
+
+["General Options"](#general-options) apply to both file and directory resources. See the
+["Directory Options"](#directory-options) section for options that let you control how files in a
+directory are processed and selected.
 
 # General Options
 
-### route\_root => $route
+### prefix => $route
 
-The route root is the route the individual conversion routes are attached to.
-For example, if the route root is `tutorials`, a conversion route named `perl`
-will be found at `tutorials/perl`. If no route root is supplied, `/` is used.
+The prefix is the route the individual conversion routes are attached to.
+For example, if the prefix is `tutorials`, a conversion route named `perl`
+will be found at `tutorials/perl`. If no prefix is supplied, `/` is used.
 
 ### file\_root => $path
 
@@ -256,8 +255,6 @@ structure with markdown headers, like so:
     ## Header 2
 
     ### Header 3
-
-    #### Header 4
 
     And so on...
 

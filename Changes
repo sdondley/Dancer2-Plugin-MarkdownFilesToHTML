@@ -1,6 +1,6 @@
-Revision history for {{$dist->name}}
+Revision history for Dancer2-Plugin-MarkdownFilesToHTML
 
-{{$NEXT}}
+0.016     2018-11-08 20:27:01-05:00 America/New_York
   - Add #Abstract comment
   - Remove NAME section from inline POD
   - Fix up section links in POD
