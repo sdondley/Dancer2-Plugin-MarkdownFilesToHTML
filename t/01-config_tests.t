@@ -124,13 +124,15 @@ my $skip = 0;
   }
 }
 
-{ # 16
+{ # 16, 17
   SKIP: {
     $skip = 0;
-    skip 'test_isolation', 1, if $skip;
-    $res = $test->request( GET 'no_resrouce' );
+    skip 'test_isolation', 3, if $skip;
+    $res = $test->request( GET 'no_resource' );
     ok( $res->is_success, 'missing resource returns legit page' );
     like ($res->content, qr/route is not properly configured/, 'displays proper message' );
+    $res = $test->request( GET 'blah/prefix_test' );
+    ok( $res->is_success, 'prefixes work' );
   }
 }
 

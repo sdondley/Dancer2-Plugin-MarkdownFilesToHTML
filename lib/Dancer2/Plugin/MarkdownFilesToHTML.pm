@@ -68,7 +68,7 @@ sub _set_options {
   my %options       = (%$defaults, %$local_options);
 
   foreach my $setting (@settings) {
-    $options{$setting} = $options->{$setting} // $s->$setting;
+    $options{$setting} = $options{$setting} // $s->$setting;
   }
 
   $options{set}               = 1;
@@ -258,7 +258,7 @@ established in the Dancer2 C<config.yml> file:
     MarkdownFilesToHTML:
       defaults:
         header_class: 'elegantshadow scrollspy'  # class added to headers
-        prefix: 'tutorials'                  # where routes get attached to
+        prefix: 'tutorials'                      # where routes get attached to
         file_root: 'lib/data/markdown_files'     # location of markdown files
         generate_toc: 1                          # generate a table of contents
         linkable_headers: 1                      # create unique id for headers
@@ -276,7 +276,7 @@ established in the Dancer2 C<config.yml> file:
             generate_toc: 0
             linkable_headers: 0
 
-See the C<CONFIGURATION> section below for more details on configuration
+See the L</CONFIGURATION> section below for more details on configuration
 settings.
 
 Markdown file conversion can also be accomplished with the C<md2html> keyword,
@@ -288,7 +288,7 @@ like so:
   # convert directory of markdown files to HTML and generate table of contents
   ($html, $toc) = md2html('/dir/with/markdown/files', { generate_toc => 1 });
 
-See the C<KEYWORDS> section for more informaiton on the C<md2html> keyword.
+See the L</KEYWORDS> section for more informaiton on the C<md2html> keyword.
 
 =head1 DESCRIPTION
 
@@ -304,7 +304,7 @@ This module relies on the L<Text::Markdown::Hoedown> module to execute the
 markdown conversions which using a fast C module. To further enhance
 performance, a basic caching mechanism using L<Storable> is employed for each
 converted markdown file so markdown to HTML conversions are avoided except for
-new and updated markdown files. See the L</"MARKDOWN CONVERSION NOTES"> for more
+new and updated markdown files. See the L</MARKDOWN CONVERSION NOTES> for more
 details on the conversion process.
 
 =head1 CONFIGURATION
@@ -393,8 +393,8 @@ modified.
 
 =head1 OPTIONS
 
-L</"General Options"> apply to both file and directory resources. See the
-L</"Directory Options"> section for options that let you control how files in a
+L</General Options> apply to both file and directory resources. See the
+L</Directory Options> section for options that let you control how files in a
 directory are processed and selected.
 
 =gen_option prefix => $route

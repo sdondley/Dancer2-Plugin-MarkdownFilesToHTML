@@ -9,6 +9,9 @@ plugins:
     routes:
       - dzil_tutorial:
           resource: 'dzil_tutorial'
-      - no_resrouce:
+      - no_resource:
           generate_toc: 1
           resource: 'none.md'
+      - prefix_test:
+          prefix: 'blah'
+          resource: 'intro.md'
