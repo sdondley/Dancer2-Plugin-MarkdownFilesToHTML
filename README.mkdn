@@ -50,7 +50,7 @@ like so:
     # convert directory of markdown files to HTML and generate table of contents
     ($html, $toc) = md2html('/dir/with/markdown/files', { generate_toc => 1 });
 
-See the ["KEYWORDS"](#keywords) section for more informaiton on the `md2html` keyword.
+See the ["KEYWORDS"](#keywords) section for more information on the `md2html` keyword.
 
 # DESCRIPTION
 
@@ -72,7 +72,7 @@ details on the conversion process.
 # CONFIGURATION
 
 Use the Dancer2 `config.yml` file for an easy way to associate routes with HTML
-generated from converted markdown files. Unless you need to modify the the HTML
+generated from converted markdown files. Unless you need to modify the HTML
 output by the module in some way, you should use the configuration file method
 for generating and displaying your HTML.
 
@@ -229,14 +229,14 @@ desired order:
 
 ### exclude\_files => \[ $file1, $file2, ... \]
 
-An array of strings represening the files that should not be converted to
+An array of strings representing the files that should not be converted to
 HTML.
 
 ### markdown\_extensions => \[ $ext1, $ext2, ... \]
 
 An array of strings representing the extensions that should be used to determine
 which files contain the markdown documents. This option is valid only with the
-`mdfiles_2html`) keyword. Only files with the listed extension will be
+`mdfiles_2html` keyword. Only files with the listed extension will be
 converted.
 
 # MARKDOWN CONVERSION NOTES
@@ -321,7 +321,7 @@ See perlmodinstall for information and options on installing Perl modules.
 
 [Dancer2](https://metacpan.org/pod/Dancer2)
 
-[Text::Markup::Hoedown](https://metacpan.org/pod/Text::Markup::Hoedown)
+[Text::Markdown::Hoedown](https://metacpan.org/pod/Text::Markdown::Hoedown)
 
 # AUTHOR
 
